@@ -32,10 +32,9 @@ func TestDataStore_Publish(t *testing.T) {
 		v   interface{}
 	}
 	tests := []struct {
-		name    string
-		fields  fields
-		args    args
-		wantErr bool
+		name   string
+		fields fields
+		args   args
 	}{
 		// TODO: Add test cases.
 	}
@@ -45,9 +44,7 @@ func TestDataStore_Publish(t *testing.T) {
 				store: tt.fields.store,
 				lock:  tt.fields.lock,
 			}
-			if err := d.Publish(tt.args.key, tt.args.v); (err != nil) != tt.wantErr {
-				t.Errorf("DataStore.Publish(%v, %v) error = %v, wantErr %v", tt.args.key, tt.args.v, err, tt.wantErr)
-			}
+			d.Publish(tt.args.key, tt.args.v)
 		})
 	}
 }
@@ -93,14 +90,13 @@ func TestDataStore_Register(t *testing.T) {
 		lock  sync.RWMutex
 	}
 	type args struct {
-		keys string
+		keys []string
 		f    Callback
 	}
 	tests := []struct {
-		name    string
-		fields  fields
-		args    args
-		wantErr bool
+		name   string
+		fields fields
+		args   args
 	}{
 		// TODO: Add test cases.
 	}
@@ -110,9 +106,7 @@ func TestDataStore_Register(t *testing.T) {
 				store: tt.fields.store,
 				lock:  tt.fields.lock,
 			}
-			if err := d.Register(tt.args.keys, tt.args.f); (err != nil) != tt.wantErr {
-				t.Errorf("DataStore.Register(%v, %v) error = %v, wantErr %v", tt.args.keys, tt.args.f, err, tt.wantErr)
-			}
+			d.Register(tt.args.keys, tt.args.f)
 		})
 	}
 }
