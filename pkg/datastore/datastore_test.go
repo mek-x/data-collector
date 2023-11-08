@@ -4,28 +4,12 @@ import (
 	"reflect"
 	"sync"
 	"testing"
+	"time"
 )
-
-func TestNew(t *testing.T) {
-	tests := []struct {
-		name string
-		want *DataStore
-	}{
-		// TODO: Add test cases.
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			if got := New(); !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("New() = %v, want %v", got, tt.want)
-			}
-		})
-	}
-}
 
 func TestDataStore_Publish(t *testing.T) {
 	type fields struct {
 		store map[string]elem
-		lock  sync.RWMutex
 	}
 	type args struct {
 		key string
@@ -42,7 +26,7 @@ func TestDataStore_Publish(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			d := &DataStore{
 				store: tt.fields.store,
-				lock:  tt.fields.lock,
+				lock:  sync.RWMutex{},
 			}
 			d.Publish(tt.args.key, tt.args.v)
 		})
@@ -52,7 +36,6 @@ func TestDataStore_Publish(t *testing.T) {
 func TestDataStore_Get(t *testing.T) {
 	type fields struct {
 		store map[string]elem
-		lock  sync.RWMutex
 	}
 	type args struct {
 		key string
@@ -64,13 +47,19 @@ func TestDataStore_Get(t *testing.T) {
 		want    interface{}
 		wantErr bool
 	}{
-		// TODO: Add test cases.
+		{
+			name:    "simple",
+			fields:  fields{store: map[string]elem{"a": {v: 1}}},
+			args:    args{"a"},
+			want:    1,
+			wantErr: false,
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			d := &DataStore{
 				store: tt.fields.store,
-				lock:  tt.fields.lock,
+				lock:  sync.RWMutex{},
 			}
 			got, err := d.Get(tt.args.key)
 			if (err != nil) != tt.wantErr {
@@ -84,29 +73,38 @@ func TestDataStore_Get(t *testing.T) {
 	}
 }
 
+func dummyCallback(k string, t time.Time, v interface{}) {}
+
 func TestDataStore_Register(t *testing.T) {
-	type fields struct {
-		store map[string]elem
-		lock  sync.RWMutex
-	}
 	type args struct {
 		keys []string
 		f    Callback
 	}
 	tests := []struct {
-		name   string
-		fields fields
-		args   args
+		name string
+		args args
 	}{
-		// TODO: Add test cases.
+		{
+			name: "simple",
+			args: args{
+				keys: []string{"a"},
+				f:    dummyCallback,
+			},
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			d := &DataStore{
-				store: tt.fields.store,
-				lock:  tt.fields.lock,
-			}
+			d := New()
 			d.Register(tt.args.keys, tt.args.f)
+			for _, v := range tt.args.keys {
+				for _, s := range d.store[v].subscribers {
+					if s != nil {
+						goto found
+					}
+				}
+			}
+			t.Errorf("DataStore.Register(%v,%v) subsciber not found in the store", tt.args.keys, tt.args.f)
+		found:
 		})
 	}
 }
