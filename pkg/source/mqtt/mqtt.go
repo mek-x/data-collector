@@ -7,12 +7,15 @@ import (
 	mqtt "github.com/eclipse/paho.mqtt.golang"
 	"gitlab.com/mek_x/DataCollector/internal/utils"
 	"gitlab.com/mek_x/DataCollector/pkg/parser"
+	"gitlab.com/mek_x/DataCollector/pkg/source"
 )
 
 type mqttSource struct {
 	client      mqtt.Client
 	mqttOptions *mqtt.ClientOptions
 }
+
+var _ source.Source = (*mqttSource)(nil)
 
 var messagePubHandler mqtt.MessageHandler = func(client mqtt.Client, msg mqtt.Message) {
 	log.Printf("MQTT received message: %s from topic: %s", msg.Payload(), msg.Topic())
@@ -73,7 +76,6 @@ func (m *mqttSource) AddDataSource(topic string, parser parser.Parser) error {
 
 	log.Printf("adding data source: %s", topic)
 	if token := m.client.Subscribe(topic, 0, func(c mqtt.Client, msg mqtt.Message) {
-		log.Printf("received message: [%s] %s", msg.Topic(), msg.Payload())
 		if err := parser.Parse(msg.Payload()); err != nil {
 			log.Println("can't parse: ", err)
 		}
