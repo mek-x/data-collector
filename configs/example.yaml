@@ -1,0 +1,59 @@
+version: 1
+
+sources:
+  mqtt:
+    type: mqtt
+    params:
+      url: ssl://someurl.com:8883
+      user: xyz
+      pass: pass
+  mqtt2:
+    type: mqtt
+    params:
+      url: tcp://otherurl.com:1883
+  file:
+    type: file
+
+sinks:
+  plotter:
+    type: iotplotter
+    params:
+      url: iotplotter.com
+      apikey: abcdefg
+  gotify:
+    type: gotify
+    params:
+      url: some-gotify-server.com
+      apikey: abcdefg
+
+data:
+  outside:
+    source:
+      name: mqtt
+      path: mqtt/topic/1
+      parser: jsonpath
+
+    vars:
+      temp: "$.T"
+      humi: "$.H"
+      press: "$.P"
+
+dispatchers:
+  - type: cron
+    param: "0 0 0 0 0"
+    sink:
+      name: plotter
+      type: json
+      spec: xyz
+
+  - type: event
+    sink:
+      name: gotify
+      type: template
+      spec: |
+        Outside: { .outside.temp }
+        Inside: { .inside.humi }
+
+    param:
+      type: threshold
+      value: 10
