@@ -14,10 +14,18 @@ type elem struct {
 	subscribers []Callback
 }
 
-type DataStore struct {
+type DataStore interface {
+	Publish(key string, v interface{})
+	Get(key string) (interface{}, error)
+	Register(keys []string, f Callback)
+}
+
+type dataStore struct {
 	store map[string]elem
 	lock  sync.RWMutex
 }
+
+var _ DataStore = (*dataStore)(nil)
 
 func newElem() elem {
 	return elem{
@@ -27,14 +35,14 @@ func newElem() elem {
 	}
 }
 
-func New() *DataStore {
-	return &DataStore{
+func New() *dataStore {
+	return &dataStore{
 		store: make(map[string]elem),
 		lock:  sync.RWMutex{},
 	}
 }
 
-func (d *DataStore) Publish(key string, v interface{}) {
+func (d *dataStore) Publish(key string, v interface{}) {
 	d.lock.Lock()
 	defer d.lock.Unlock()
 
@@ -53,7 +61,7 @@ func (d *DataStore) Publish(key string, v interface{}) {
 	}
 }
 
-func (d *DataStore) Get(key string) (interface{}, error) {
+func (d *dataStore) Get(key string) (interface{}, error) {
 	d.lock.RLock()
 	defer d.lock.RUnlock()
 
@@ -65,7 +73,7 @@ func (d *DataStore) Get(key string) (interface{}, error) {
 	return e.v, nil
 }
 
-func (d *DataStore) Register(keys []string, f Callback) {
+func (d *dataStore) Register(keys []string, f Callback) {
 	d.lock.Lock()
 	defer d.lock.Unlock()
 

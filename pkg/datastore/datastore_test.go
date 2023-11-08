@@ -24,7 +24,7 @@ func TestDataStore_Publish(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			d := &DataStore{
+			d := &dataStore{
 				store: tt.fields.store,
 				lock:  sync.RWMutex{},
 			}
@@ -57,7 +57,7 @@ func TestDataStore_Get(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			d := &DataStore{
+			d := &dataStore{
 				store: tt.fields.store,
 				lock:  sync.RWMutex{},
 			}
