@@ -28,15 +28,14 @@ sinks:
 
 data:
   outside:
-    source:
-      name: mqtt
-      path: mqtt/topic/1
-      parser: jsonpath
-
+    source: mqtt
+    path: mqtt/topic/1
+    parser: jsonpath
     vars:
       temp: "$.T"
       humi: "$.H"
       press: "$.P"
+      addr: "$.address"
 
 dispatchers:
   - type: cron
