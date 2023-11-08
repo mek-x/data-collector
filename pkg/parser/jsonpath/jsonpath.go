@@ -5,6 +5,7 @@ import (
 	"log"
 
 	"gitlab.com/mek_x/DataCollector/pkg/datastore"
+	"gitlab.com/mek_x/DataCollector/pkg/parser"
 
 	jp "github.com/PaesslerAG/jsonpath"
 )
@@ -14,6 +15,8 @@ type jsonpathParser struct {
 	vars  map[string]string
 	name  string
 }
+
+var _ parser.Parser = (*jsonpathParser)(nil)
 
 func New(name string, store datastore.DataStore) *jsonpathParser {
 	return &jsonpathParser{
