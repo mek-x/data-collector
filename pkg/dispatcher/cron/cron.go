@@ -29,12 +29,17 @@ func New(cronString string, ds datastore.DataStore) *cronDispatcher {
 
 func (c *cronDispatcher) sendToAll() {
 	for val, s := range c.sinks {
-		toSend, err := c.ds.Get(val)
+		toSend, stamp, err := c.ds.Get(val)
 		if err != nil {
 			log.Println("can't find var in ds: ", err)
 			continue
 		}
-		j, err := json.Marshal(toSend)
+		v := struct {
+			Data any
+			Time time.Time
+		}{toSend, stamp}
+
+		j, err := json.Marshal(v)
 		if err != nil {
 			log.Println("can't encode json: ", err)
 			return

@@ -16,7 +16,7 @@ type elem struct {
 
 type DataStore interface {
 	Publish(key string, v interface{})
-	Get(key string) (interface{}, error)
+	Get(key string) (interface{}, time.Time, error)
 	Register(keys []string, f Callback)
 }
 
@@ -61,16 +61,16 @@ func (d *dataStore) Publish(key string, v interface{}) {
 	}
 }
 
-func (d *dataStore) Get(key string) (interface{}, error) {
+func (d *dataStore) Get(key string) (interface{}, time.Time, error) {
 	d.lock.RLock()
 	defer d.lock.RUnlock()
 
 	e, ok := d.store[key]
 	if !ok {
-		return nil, fmt.Errorf("%s: not found", key)
+		return nil, time.Time{}, fmt.Errorf("%s: not found", key)
 	}
 
-	return e.v, nil
+	return e.v, e.stamp, nil
 }
 
 func (d *dataStore) Register(keys []string, f Callback) {

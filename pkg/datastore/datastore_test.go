@@ -61,7 +61,7 @@ func TestDataStore_Get(t *testing.T) {
 				store: tt.fields.store,
 				lock:  sync.RWMutex{},
 			}
-			got, err := d.Get(tt.args.key)
+			got, _, err := d.Get(tt.args.key)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("DataStore.Get(%v) error = %v, wantErr %v", tt.args.key, err, tt.wantErr)
 				return
