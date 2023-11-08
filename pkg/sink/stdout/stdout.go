@@ -3,7 +3,7 @@ package stdout
 import (
 	"fmt"
 
-	"gitlab.com/mek_x/DataCollector/pkg/sink"
+	"gitlab.com/mek_x/data-collector/pkg/sink"
 )
 
 type Stdout struct{}

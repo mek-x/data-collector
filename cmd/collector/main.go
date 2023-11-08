@@ -7,11 +7,11 @@ import (
 	"time"
 
 	yaml "github.com/goccy/go-yaml"
-	"gitlab.com/mek_x/DataCollector/pkg/datastore"
-	"gitlab.com/mek_x/DataCollector/pkg/dispatcher/cron"
-	"gitlab.com/mek_x/DataCollector/pkg/parser/jsonpath"
-	"gitlab.com/mek_x/DataCollector/pkg/sink/stdout"
-	"gitlab.com/mek_x/DataCollector/pkg/source/mqtt"
+	"gitlab.com/mek_x/data-collector/pkg/collector/mqtt"
+	"gitlab.com/mek_x/data-collector/pkg/datastore"
+	"gitlab.com/mek_x/data-collector/pkg/dispatcher/cron"
+	"gitlab.com/mek_x/data-collector/pkg/parser/jsonpath"
+	"gitlab.com/mek_x/data-collector/pkg/sink/stdout"
 )
 
 func main() {

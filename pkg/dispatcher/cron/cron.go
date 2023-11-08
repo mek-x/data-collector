@@ -6,9 +6,9 @@ import (
 	"time"
 
 	"github.com/go-co-op/gocron"
-	"gitlab.com/mek_x/DataCollector/pkg/datastore"
-	"gitlab.com/mek_x/DataCollector/pkg/dispatcher"
-	"gitlab.com/mek_x/DataCollector/pkg/sink"
+	"gitlab.com/mek_x/data-collector/pkg/datastore"
+	"gitlab.com/mek_x/data-collector/pkg/dispatcher"
+	"gitlab.com/mek_x/data-collector/pkg/sink"
 )
 
 type cronDispatcher struct {

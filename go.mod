@@ -1,4 +1,4 @@
-module gitlab.com/mek_x/DataCollector
+module gitlab.com/mek_x/data-collector
 
 go 1.21.1
 

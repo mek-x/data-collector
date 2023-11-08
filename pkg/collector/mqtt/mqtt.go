@@ -5,9 +5,9 @@ import (
 	"log"
 
 	mqtt "github.com/eclipse/paho.mqtt.golang"
-	"gitlab.com/mek_x/DataCollector/internal/utils"
-	"gitlab.com/mek_x/DataCollector/pkg/parser"
-	"gitlab.com/mek_x/DataCollector/pkg/source"
+	"gitlab.com/mek_x/data-collector/internal/utils"
+	"gitlab.com/mek_x/data-collector/pkg/collector"
+	"gitlab.com/mek_x/data-collector/pkg/parser"
 )
 
 type mqttSource struct {
@@ -15,7 +15,7 @@ type mqttSource struct {
 	mqttOptions *mqtt.ClientOptions
 }
 
-var _ source.Source = (*mqttSource)(nil)
+var _ collector.Collector = (*mqttSource)(nil)
 
 var messagePubHandler mqtt.MessageHandler = func(client mqtt.Client, msg mqtt.Message) {
 	log.Printf("MQTT received message: %s from topic: %s", msg.Payload(), msg.Topic())
