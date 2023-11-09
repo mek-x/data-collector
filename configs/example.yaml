@@ -1,6 +1,6 @@
 version: 1
 
-sources:
+collectors:
   mqtt:
     type: mqtt
     params:
@@ -28,7 +28,7 @@ sinks:
 
 data:
   outside:
-    source: mqtt
+    collector: mqtt
     path: mqtt/topic/1
     parser: jsonpath
     vars:

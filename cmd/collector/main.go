@@ -2,17 +2,34 @@ package main
 
 import (
 	"bytes"
+	"fmt"
 	"log"
 	"os"
 	"time"
 
 	yaml "github.com/goccy/go-yaml"
+	"gitlab.com/mek_x/data-collector/pkg/collector"
 	"gitlab.com/mek_x/data-collector/pkg/collector/mqtt"
 	"gitlab.com/mek_x/data-collector/pkg/datastore"
 	"gitlab.com/mek_x/data-collector/pkg/dispatcher/cron"
 	"gitlab.com/mek_x/data-collector/pkg/parser/jsonpath"
 	"gitlab.com/mek_x/data-collector/pkg/sink/stdout"
 )
+
+func parseConfig(in []byte, yamlPath string, object interface{}) error {
+
+	path, err := yaml.PathString(yamlPath)
+	if err != nil {
+		return err
+	}
+
+	err = path.Read(bytes.NewReader(in), object)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
 
 func main() {
 	if len(os.Args) < 2 {
@@ -24,44 +41,42 @@ func main() {
 		log.Fatal("can't read config file: ", err)
 	}
 
+	y = []byte(os.ExpandEnv(string(y)))
+
 	ds := datastore.New()
 
-	params := struct {
-		Url  string `yaml:"url"`
-		User string `yaml:"user"`
-		Pass string `yaml:"pass"`
-	}{}
+	collectorsCfg := make(map[string]map[string]interface{})
+	parseConfig(y, "$.collectors", &collectorsCfg)
 
-	path, err := yaml.PathString("$.sources.mqtt.params")
-	if err != nil {
-		log.Fatal("path string is bad: ", err)
-	}
+	collectors := make(map[string]collector.Collector)
 
-	err = path.Read(bytes.NewReader(y), &params)
-	if err != nil {
-		log.Fatal("can't parse source params")
-	}
-
-	path, err = yaml.PathString("$.data.outside.path")
-	if err != nil {
-		log.Fatal("path string is bad: ", err)
+	for i, v := range collectorsCfg {
+		switch v["type"].(string) {
+		case "mqtt":
+			params := mqtt.MqttParams{}
+			parseConfig(y, fmt.Sprintf("$.collectors.%s.params", i), &params)
+			mqtt := mqtt.NewClient(params)
+			collectors[i] = mqtt
+			log.Print("added collector: ", i, ", type: ", v["type"])
+		default:
+			log.Printf("config: collectors.%s - unknown type: %s", i, v["type"])
+		}
 	}
 
 	var topic string
-	err = path.Read(bytes.NewReader(y), &topic)
+	err = parseConfig(y, "$.data.outside.path", &topic)
 	if err != nil {
-		log.Fatal("can't parse source params")
+		log.Fatal("can't parse source params: ", err)
 	}
 
-	mqtt := mqtt.NewClient(params.Url, params.User, params.Pass)
-	mqtt.Start()
+	collectors["mqtt"].Start()
 
 	p := jsonpath.New("out", ds)
 	p.AddVar("temp", "$.T")
 	p.AddVar("humi", "$.H")
 	p.AddVar("addr", "$.address")
 
-	mqtt.AddDataSource(topic, p)
+	collectors["mqtt"].AddDataSource(topic, p)
 
 	d := cron.New("*/1 * * * * *", ds)
 	d.AddSink("out", stdout.Stdout{})
@@ -71,5 +86,5 @@ func main() {
 		time.Sleep(1 * time.Second)
 	}
 
-	mqtt.End()
+	collectors["mqtt"].End()
 }

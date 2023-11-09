@@ -7,4 +7,5 @@ import (
 type Collector interface {
 	Start() error
 	AddDataSource(path string, parser parser.Parser) error
+	End()
 }

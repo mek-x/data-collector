@@ -15,6 +15,12 @@ type mqttSource struct {
 	mqttOptions *mqtt.ClientOptions
 }
 
+type MqttParams struct {
+	Url  string
+	User string
+	Pass string
+}
+
 var _ collector.Collector = (*mqttSource)(nil)
 
 var messagePubHandler mqtt.MessageHandler = func(client mqtt.Client, msg mqtt.Message) {
@@ -29,7 +35,7 @@ var connectLostHandler mqtt.ConnectionLostHandler = func(client mqtt.Client, err
 	log.Printf("MQTT connection lost: %v", err)
 }
 
-func NewClient(url string, user string, pass string) *mqttSource {
+func NewClient(opt MqttParams) *mqttSource {
 
 	ssl := tls.Config{
 		RootCAs: nil,
@@ -38,10 +44,10 @@ func NewClient(url string, user string, pass string) *mqttSource {
 	var m mqttSource
 
 	opts := mqtt.NewClientOptions()
-	opts.AddBroker(url)
+	opts.AddBroker(opt.Url)
 	opts.SetClientID("data-collector-" + utils.RandomString(5))
-	opts.SetUsername(user)
-	opts.SetPassword(pass)
+	opts.SetUsername(opt.User)
+	opts.SetPassword(opt.Pass)
 	opts.SetDefaultPublishHandler(messagePubHandler)
 	opts.OnConnect = connectHandler
 	opts.OnConnectionLost = connectLostHandler
