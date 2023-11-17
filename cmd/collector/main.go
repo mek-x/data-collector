@@ -44,6 +44,12 @@ func main() {
 		log.Fatal("can't read config file: ", err)
 	}
 
+	var version int
+	parseConfig(y, "$.version", &version)
+	if version != 1 {
+		log.Fatal("config file has not supported version: ", version)
+	}
+
 	y = []byte(os.ExpandEnv(string(y)))
 
 	ds := datastore.New()
