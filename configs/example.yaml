@@ -4,55 +4,81 @@ collectors:
   mqtt:
     type: mqtt
     params:
-      url: ssl://someurl.com:8883
-      user: xyz
+      url: ssl://mqtt:8883
+      user: user
       pass: pass
-  mqtt2:
+  mqtt-2:
     type: mqtt
     params:
-      url: tcp://otherurl.com:1883
-  file:
+      url: ssl://mqtt2:8883
+  cpuTemp:
     type: file
+    params:
+      path: /sys/class/thermal/thermal_zone0/temp
 
 sinks:
   plotter:
     type: iotplotter
     params:
-      url: iotplotter.com
-      apikey: abcdefg
+      url: http://iotplotter.com
+      apikey: 12345
+      feed: "123456789"
   gotify:
     type: gotify
     params:
-      url: some-gotify-server.com
+      url: https://gotify
+      token: ABCDEFG
+  windy:
+    type: windy
+    params:
       apikey: abcdefg
+      id: 1
+  stdout:
+    type: stdout
 
 data:
   outside:
     collector: mqtt
-    path: mqtt/topic/1
+    path: /topic1
     parser: jsonpath
     vars:
-      temp: "$.T"
-      humi: "$.H"
-      press: "$.P"
-      addr: "$.address"
+      temp: "$.temp"
+      humi: "$.humi"
+    conv:
+      temp: "*10"
+  cnt:
+    collector: mqtt-2
+    path: /topic/2
+    parser: jsonpath
+    vars:
+      cnt: "$"
+  cpu:
+    collector: cpuTemp
+    parser: regex
+    vars:
+      temp: ".*"
 
 dispatchers:
-  - type: cron
-    param: "0 0 0 0 0"
-    sink:
-      name: plotter
-      type: json
-      spec: xyz
-
-  - type: event
-    sink:
-      name: gotify
-      type: template
-      spec: |
-        Outside: { .outside.temp }
-        Inside: { .inside.humi }
-
-    param:
-      type: threshold
-      value: 10
+- type: cron
+  param: "*/30 * * * * *"
+  sinks:
+  - name: stdout
+    type: expr
+    spec: |
+      {
+        "data": {
+          "temp": [ {"value": outside?.temp ?? 0} ],
+          "humi": [ {"value": outside?.humi ?? 0} ]
+        }
+      }
+  - name: stdout
+    type: template
+    spec: |
+      Cnt: {{ .cnt.cnt }}
+- type: cron
+  param: "*/3 * * * * *"
+  sinks:
+  - name: stdout
+    type: template
+    spec: |
+      CPU Temp: {{ .cpu.temp }}
