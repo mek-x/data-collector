@@ -61,18 +61,21 @@ This project uses `ko` as a build system.
     - [x] jsonpath
     - [ ] regex
 3. Dispatchers:
-    - [ ] cron
+    - [x] cron
     - [ ] event
 4. Sinks:
+    - [x] support for templating output
     - [ ] generic REST (template/json)
     - [ ] gotify (template)
     - [ ] iotplotter (json)
     - [ ] file (csv)
-    - [ ] stdout (for debugging or template)
+    - [x] stdout (for debugging or template)
 5. Configuration:
     - [x] yaml support
     - [x] replacing env variables
         - [ ] testing needed
+6. Others:
+    - [ ] CI
 
 ## Dependencies
 
