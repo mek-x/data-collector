@@ -43,14 +43,7 @@ func (c *cronDispatcher) sendToAll() {
 
 		switch s.cfg.Type {
 		case "expr":
-			env := c.ds.Map()
-			program, err := expr.Compile(s.cfg.Spec, expr.Env(env))
-			if err != nil {
-				log.Println("can't compile expr: ", err)
-				continue
-			}
-
-			output, err := expr.Run(program, env)
+			output, err := expr.Eval(s.cfg.Spec, c.ds.Map())
 			if err != nil {
 				log.Println("can't run expr: ", err)
 				continue

@@ -13,6 +13,7 @@ import (
 	"gitlab.com/mek_x/data-collector/pkg/datastore"
 	"gitlab.com/mek_x/data-collector/pkg/dispatcher"
 	"gitlab.com/mek_x/data-collector/pkg/dispatcher/cron"
+	"gitlab.com/mek_x/data-collector/pkg/parser"
 	"gitlab.com/mek_x/data-collector/pkg/parser/jsonpath"
 	"gitlab.com/mek_x/data-collector/pkg/sink"
 	"gitlab.com/mek_x/data-collector/pkg/sink/stdout"
@@ -104,20 +105,33 @@ func main() {
 		}
 	}
 
-	var topic string
-	err = parseConfig(y, "$.data.outside.path", &topic)
-	if err != nil {
-		log.Fatal("can't parse source params: ", err)
+	for _, c := range collectors {
+		c.Start()
 	}
 
-	collectors["mqtt"].Start()
+	dataCfg := make(map[string]map[string]interface{})
+	parseConfig(y, "$.data", &dataCfg)
 
-	p := jsonpath.New("outside", ds)
-	p.AddVar("temp", "$.T")
-	p.AddVar("humi", "$.H")
-	p.AddVar("addr", "$.address")
+	for i, v := range dataCfg {
+		var p parser.Parser
+		switch v["parser"].(string) {
+		case "jsonpath":
+			p = jsonpath.New(i, ds)
+			vars := make(map[string]string)
+			parseConfig(y, fmt.Sprintf("$.data.%s.vars", i), &vars)
+			for k, val := range vars {
+				p.AddVar(k, val)
+			}
+		default:
+			log.Printf("config: data[%s] - unknown parser type: %s", i, v["parser"])
+			continue
+		}
 
-	collectors["mqtt"].AddDataSource(topic, p)
+		topic := v["path"].(string)
+		c := v["collector"].(string)
+
+		collectors[c].AddDataSource(topic, p)
+	}
 
 	for _, d := range dispatchers {
 		d.Start()
@@ -127,5 +141,7 @@ func main() {
 		time.Sleep(1 * time.Second)
 	}
 
-	collectors["mqtt"].End()
+	for _, c := range collectors {
+		c.End()
+	}
 }
