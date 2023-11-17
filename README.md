@@ -14,10 +14,15 @@ Overall architecture:
 
 ```mermaid
 flowchart LR
-    A[Collector] --> B[Parser]
-    B --> C(DataStore)
-    C --> D[Dispatcher]
-    D --> E[Sink]
+    A1[Collector A] --> B1[Parser]
+    A2[Collector B] --> B2[Parser]
+    B1 & B2 --> C(DataStore)
+    C --> D1[Dispatcher A]
+    C --> D2[Dispatcher B]
+    D1 --> S1[Sink A]
+    D1 --> S2[Sink B]
+    D2 --> S3[Sink C]
+    D2 --> S4[Sink D]
 ```
 
 Legend:
@@ -45,6 +50,29 @@ Configuration is in YAML file. Example is [here](./configs/example.yaml)
 ## Deployment
 
 This project uses `ko` as a build system.
+
+## Todo list
+
+1. Collectors:
+    - [x] mqtt
+    - [ ] file
+2. Parsers:
+    - [ ] add expression eval support
+    - [x] jsonpath
+    - [ ] regex
+3. Dispatchers:
+    - [ ] cron
+    - [ ] event
+4. Sinks:
+    - [ ] generic REST (template/json)
+    - [ ] gotify (template)
+    - [ ] iotplotter (json)
+    - [ ] file (csv)
+    - [ ] stdout (for debugging or template)
+5. Configuration:
+    - [x] yaml support
+    - [x] replacing env variables
+        - [ ] testing needed
 
 ## Dependencies
 
