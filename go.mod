@@ -4,6 +4,7 @@ go 1.21.1
 
 require (
 	github.com/PaesslerAG/jsonpath v0.1.1
+	github.com/antonmedv/expr v1.15.4
 	github.com/eclipse/paho.mqtt.golang v1.4.3
 	github.com/go-co-op/gocron v1.35.3
 	github.com/goccy/go-yaml v1.11.2

@@ -1,19 +1,28 @@
 package cron
 
 import (
+	"bytes"
 	"encoding/json"
 	"log"
+	"text/template"
 	"time"
 
 	"github.com/go-co-op/gocron"
 	"gitlab.com/mek_x/data-collector/pkg/datastore"
 	"gitlab.com/mek_x/data-collector/pkg/dispatcher"
 	"gitlab.com/mek_x/data-collector/pkg/sink"
+
+	"github.com/antonmedv/expr"
 )
+
+type sinkInstance struct {
+	iface sink.Sink
+	cfg   sink.SinkCfg
+}
 
 type cronDispatcher struct {
 	cronString string
-	sinks      map[string]sink.Sink
+	sinks      []sinkInstance
 	ds         datastore.DataStore
 }
 
@@ -23,29 +32,51 @@ func New(cronString string, ds datastore.DataStore) *cronDispatcher {
 	return &cronDispatcher{
 		cronString: cronString,
 		ds:         ds,
-		sinks:      make(map[string]sink.Sink),
+		sinks:      make([]sinkInstance, 0),
 	}
 }
 
 func (c *cronDispatcher) sendToAll() {
-	for val, s := range c.sinks {
-		toSend, stamp, err := c.ds.Get(val)
-		if err != nil {
-			log.Println("can't find var in ds: ", err)
+	for _, s := range c.sinks {
+
+		var toSend []byte
+
+		switch s.cfg.Type {
+		case "expr":
+			env := c.ds.Map()
+			program, err := expr.Compile(s.cfg.Spec, expr.Env(env))
+			if err != nil {
+				log.Println("can't compile expr: ", err)
+				continue
+			}
+
+			output, err := expr.Run(program, env)
+			if err != nil {
+				log.Println("can't run expr: ", err)
+				continue
+			}
+
+			toSend, err = json.Marshal(output)
+			if err != nil {
+				log.Println("can't encode json: ", err)
+				continue
+			}
+		case "template":
+			t := template.Must(template.New("msg").Parse(s.cfg.Spec))
+			b := &bytes.Buffer{}
+			err := t.Execute(b, c.ds.Map())
+			if err != nil {
+				log.Print("can't execute template: ", err)
+				continue
+			}
+			toSend = b.Bytes()
+		default:
+			log.Printf("unknown sink (%s) data type: %s", s.cfg.Name, s.cfg.Type)
 			continue
 		}
-		v := struct {
-			Data any
-			Time time.Time
-		}{toSend, stamp}
 
-		j, err := json.Marshal(v)
-		if err != nil {
-			log.Println("can't encode json: ", err)
-			return
-		}
-
-		s.Send(j)
+		log.Print("Sending to: ", s.cfg.Name)
+		s.iface.Send(toSend)
 	}
 }
 
@@ -56,6 +87,10 @@ func (c *cronDispatcher) Start() {
 	s.StartAsync()
 }
 
-func (c *cronDispatcher) AddSink(name string, s sink.Sink) {
-	c.sinks[name] = s
+func (c *cronDispatcher) AddSink(s sink.Sink, cfg sink.SinkCfg) {
+	sink := sinkInstance{
+		iface: s,
+		cfg:   cfg,
+	}
+	c.sinks = append(c.sinks, sink)
 }
