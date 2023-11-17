@@ -18,6 +18,7 @@ type DataStore interface {
 	Publish(key string, v interface{})
 	Get(key string) (interface{}, time.Time, error)
 	Register(keys []string, f Callback)
+	Map() map[string]any
 }
 
 type dataStore struct {
@@ -85,4 +86,17 @@ func (d *dataStore) Register(keys []string, f Callback) {
 		e.subscribers = append(e.subscribers, f)
 		d.store[k] = e
 	}
+}
+
+func (d *dataStore) Map() map[string]any {
+	out := make(map[string]any)
+
+	d.lock.Lock()
+	defer d.lock.Unlock()
+
+	for k, v := range d.store {
+		out[k] = v.v
+	}
+
+	return out
 }
