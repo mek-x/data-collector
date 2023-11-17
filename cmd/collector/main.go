@@ -11,8 +11,10 @@ import (
 	"gitlab.com/mek_x/data-collector/pkg/collector"
 	"gitlab.com/mek_x/data-collector/pkg/collector/mqtt"
 	"gitlab.com/mek_x/data-collector/pkg/datastore"
+	"gitlab.com/mek_x/data-collector/pkg/dispatcher"
 	"gitlab.com/mek_x/data-collector/pkg/dispatcher/cron"
 	"gitlab.com/mek_x/data-collector/pkg/parser/jsonpath"
+	"gitlab.com/mek_x/data-collector/pkg/sink"
 	"gitlab.com/mek_x/data-collector/pkg/sink/stdout"
 )
 
@@ -63,6 +65,45 @@ func main() {
 		}
 	}
 
+	sinksCfg := make(map[string]map[string]interface{})
+	parseConfig(y, "$.sinks", &sinksCfg)
+	sinks := make(map[string]sink.Sink)
+
+	for i, v := range sinksCfg {
+		switch v["type"].(string) {
+		case "stdout":
+			s := stdout.Stdout{}
+			sinks[i] = s
+			log.Print("added sink: ", i, ", type: ", v["type"])
+		default:
+			log.Printf("config: sinks.%s - unknown type: %s", i, v["type"])
+		}
+	}
+
+	dispatchersCfg := make([]map[string]interface{}, 0)
+	parseConfig(y, "$.dispatchers", &dispatchersCfg)
+	dispatchers := make([]dispatcher.Dispatcher, 0)
+
+	for i, v := range dispatchersCfg {
+		switch v["type"].(string) {
+		case "cron":
+			cronStr := v["param"].(string)
+			c := cron.New(cronStr, ds)
+			targets := make([]sink.SinkCfg, 0)
+			parseConfig(y, fmt.Sprintf("$.dispatchers[%d].sinks", i), &targets)
+			for _, s := range targets {
+				c.AddSink(sinks[s.Name], s)
+				log.Print("cron - added sink: ", s)
+			}
+
+			dispatchers = append(dispatchers, c)
+			log.Print("added dispatcher: ", i, ", type: ", v["type"])
+		case "event":
+		default:
+			log.Printf("config: dispatchers[%d] - unknown type: %s", i, v["type"])
+		}
+	}
+
 	var topic string
 	err = parseConfig(y, "$.data.outside.path", &topic)
 	if err != nil {
@@ -71,16 +112,16 @@ func main() {
 
 	collectors["mqtt"].Start()
 
-	p := jsonpath.New("out", ds)
+	p := jsonpath.New("outside", ds)
 	p.AddVar("temp", "$.T")
 	p.AddVar("humi", "$.H")
 	p.AddVar("addr", "$.address")
 
 	collectors["mqtt"].AddDataSource(topic, p)
 
-	d := cron.New("*/1 * * * * *", ds)
-	d.AddSink("out", stdout.Stdout{})
-	d.Start()
+	for _, d := range dispatchers {
+		d.Start()
+	}
 
 	for i := 0; i < 10; i++ {
 		time.Sleep(1 * time.Second)
