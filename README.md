@@ -55,7 +55,7 @@ This project uses `ko` as a build system.
 
 1. Collectors:
     - [x] mqtt
-    - [ ] file
+    - [x] file
 2. Parsers:
     - [ ] add expression eval support
     - [x] jsonpath
