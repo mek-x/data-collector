@@ -9,6 +9,7 @@ import (
 
 	yaml "github.com/goccy/go-yaml"
 	"gitlab.com/mek_x/data-collector/pkg/collector"
+	"gitlab.com/mek_x/data-collector/pkg/collector/file"
 	"gitlab.com/mek_x/data-collector/pkg/collector/mqtt"
 	"gitlab.com/mek_x/data-collector/pkg/datastore"
 	"gitlab.com/mek_x/data-collector/pkg/dispatcher"
@@ -64,8 +65,12 @@ func main() {
 		case "mqtt":
 			params := mqtt.MqttParams{}
 			parseConfig(y, fmt.Sprintf("$.collectors.%s.params", i), &params)
-			mqtt := mqtt.NewClient(params)
-			collectors[i] = mqtt
+			collectors[i] = mqtt.NewClient(params)
+			log.Print("added collector: ", i, ", type: ", v["type"])
+		case "file":
+			var interval int
+			parseConfig(y, fmt.Sprintf("$.collectors.%s.params", i), &interval)
+			collectors[i] = file.New(interval)
 			log.Print("added collector: ", i, ", type: ", v["type"])
 		default:
 			log.Printf("config: collectors.%s - unknown type: %s", i, v["type"])
