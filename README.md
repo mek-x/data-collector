@@ -30,6 +30,7 @@ Legend:
 1. Collectors - collects data from configured sources
     - MQTT - subscribes to configured topics and gathers the data
     - File - gathers the data from files
+    - Shell - gets data from shell
 2. Parsers - convert data from source format into the intermediate value to be
    used by dispatcher/sink
     - jsonpath - uses jsonpath to parse data
@@ -47,6 +48,14 @@ Legend:
 
 Configuration is in YAML file. Example is [here](./configs/example.yaml)
 
+### Support for evaluating expressions
+
+Used in:
+- `data.<name>.conv` - to convert variable, e.g. multiply the value by 10 (`val * 10`)
+- `dispatchers.sink[].spec` - when `type` is `expr` it can be used for templating, e.g. to generate json (`toJSON(val)`)
+
+Syntax for the evaluation is documented here: [Expr Language Definition](https://expr.medv.io/docs/Language-Definition)
+
 ## Deployment
 
 This project uses `ko` as a build system.
@@ -56,6 +65,7 @@ This project uses `ko` as a build system.
 1. Collectors:
     - [x] mqtt
     - [x] file
+    - [ ] shell
 2. Parsers:
     - [x] add expression eval support
     - [x] jsonpath
@@ -83,3 +93,4 @@ This project uses `ko` as a build system.
 - [Paho MQTT](https://github.com/eclipse/paho.mqtt.golang)
 - [gocron](https://github.com/go-co-op/gocron)
 - [go-yaml](https://github.com/goccy/go-yaml)
+- [expr]("https://github.com/antonmedv/expr")
