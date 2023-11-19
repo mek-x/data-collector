@@ -133,6 +133,11 @@ func main() {
 			for k, val := range vars {
 				p.AddVar(k, val)
 			}
+			conv := make(map[string]string)
+			parseConfig(y, fmt.Sprintf("$.data.%s.conv", i), &conv)
+			for k, val := range conv {
+				p.AddConv(k, val)
+			}
 		default:
 			log.Printf("config: data[%s] - unknown parser type: %s", i, v["parser"])
 			continue

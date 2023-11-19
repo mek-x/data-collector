@@ -57,7 +57,7 @@ This project uses `ko` as a build system.
     - [x] mqtt
     - [x] file
 2. Parsers:
-    - [ ] add expression eval support
+    - [x] add expression eval support
     - [x] jsonpath
     - [ ] regex
 3. Dispatchers:
