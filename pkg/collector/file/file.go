@@ -31,11 +31,13 @@ func New(interval int) *fileSource {
 
 func (f *fileSource) Start() error {
 	go func() {
+	loop:
 		for {
 			select {
 			case <-f.end:
 				f.end <- false
 				close(f.end)
+				break loop
 			case <-time.After(time.Duration(f.interval) * time.Second):
 				for _, i := range f.sources {
 					buf, err := os.ReadFile(i.path)
