@@ -1,7 +1,7 @@
 package sink
 
 type Sink interface {
-	Send(b []byte)
+	Send(b []byte) error
 }
 
 type SinkCfg struct {
@@ -10,7 +10,7 @@ type SinkCfg struct {
 	Spec string
 }
 
-type Init func() Sink
+type Init func(params any) Sink
 type registry map[string]Init
 
 var Registry = make(registry)

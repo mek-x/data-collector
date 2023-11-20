@@ -6,18 +6,19 @@ import (
 	"gitlab.com/mek_x/data-collector/pkg/sink"
 )
 
-type Stdout struct{}
+type stdout struct{}
 
-var _ sink.Sink = (*Stdout)(nil)
+var _ sink.Sink = (*stdout)(nil)
 
 func init() {
 	sink.Registry.Add("stdout", New)
 }
 
-func New() sink.Sink {
-	return &Stdout{}
+func New(params any) sink.Sink {
+	return &stdout{}
 }
 
-func (*Stdout) Send(b []byte) {
+func (*stdout) Send(b []byte) error {
 	fmt.Println(string(b))
+	return nil
 }

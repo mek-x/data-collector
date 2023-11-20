@@ -74,7 +74,10 @@ func (c *cronDispatcher) sendToAll() {
 		}
 
 		log.Print("Sending to: ", s.cfg.Name)
-		s.iface.Send(toSend)
+		err := s.iface.Send(toSend)
+		if err != nil {
+			log.Print("Sink error: ", err)
+		}
 	}
 }
 
