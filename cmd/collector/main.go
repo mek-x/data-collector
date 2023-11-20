@@ -18,7 +18,7 @@ import (
 	_ "gitlab.com/mek_x/data-collector/internal/modules"
 )
 
-func parseConfig(in []byte, yamlPath string, object interface{}) error {
+func parseConfig(in []byte, yamlPath string, object any) error {
 
 	path, err := yaml.PathString(yamlPath)
 	if err != nil {
@@ -53,13 +53,13 @@ func main() {
 
 	ds := datastore.New()
 
-	collectorsCfg := make(map[string]map[string]interface{})
+	collectorsCfg := make(map[string]map[string]any)
 	parseConfig(y, "$.collectors", &collectorsCfg)
 	collectors := make(map[string]collector.Collector)
 
 	for i, v := range collectorsCfg {
 		collectorType := v["type"].(string)
-		var params interface{}
+		var params any
 		err := parseConfig(y, fmt.Sprintf("$.collectors.%s.params", i), &params)
 		if errors.Is(err, yaml.ErrNotFoundNode) {
 			params = nil
@@ -81,26 +81,35 @@ func main() {
 		log.Print("added collector: ", i, ", type: ", collectorType)
 	}
 
-	sinksCfg := make(map[string]map[string]interface{})
+	sinksCfg := make(map[string]map[string]any)
 	parseConfig(y, "$.sinks", &sinksCfg)
 	sinks := make(map[string]sink.Sink)
 
 	for i, v := range sinksCfg {
 		sinkType := v["type"].(string)
+		var params any
+		err := parseConfig(y, fmt.Sprintf("$.sinks.%s.params", i), &params)
+		if errors.Is(err, yaml.ErrNotFoundNode) {
+			params = nil
+		} else if err != nil {
+			log.Print(i, ": error parsing collector params: ", err)
+			continue
+		}
 		sinkInit, ok := sink.Registry[sinkType]
 		if !ok {
 			log.Print(i, ": unknown sink type - ", sinkType)
 			continue
 		}
-		s := sinkInit()
+		s := sinkInit(params)
 		if s == nil {
 			log.Print(i, ": can't initialize sink, config error?")
+			continue
 		}
 		sinks[i] = s
 		log.Print("added sink: ", i, ", type: ", sinkType)
 	}
 
-	dispatchersCfg := make([]map[string]interface{}, 0)
+	dispatchersCfg := make([]map[string]any, 0)
 	parseConfig(y, "$.dispatchers", &dispatchersCfg)
 	dispatchers := make([]dispatcher.Dispatcher, 0)
 
@@ -120,13 +129,17 @@ func main() {
 		d := dispatcherInit(param, ds)
 		if d == nil {
 			log.Print(i, ": can't initialize dispatcher, config error?")
+			continue
 		}
 
 		targets := make([]sink.SinkCfg, 0)
 		parseConfig(y, fmt.Sprintf("$.dispatchers[%d].sinks", i), &targets)
-		for _, s := range targets {
-			d.AddSink(sinks[s.Name], s)
-			log.Print(i, ": added sink - ", s)
+		for _, cfg := range targets {
+			s, ok := sinks[cfg.Name]
+			if ok {
+				d.AddSink(s, cfg)
+				log.Print(i, ": assigned sink - ", cfg.Name)
+			}
 		}
 
 		dispatchers = append(dispatchers, d)
@@ -137,7 +150,7 @@ func main() {
 		c.Start()
 	}
 
-	dataCfg := make(map[string]map[string]interface{})
+	dataCfg := make(map[string]map[string]any)
 	parseConfig(y, "$.data", &dataCfg)
 
 	for i, v := range dataCfg {
