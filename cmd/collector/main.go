@@ -16,7 +16,6 @@ import (
 	"gitlab.com/mek_x/data-collector/pkg/parser"
 	"gitlab.com/mek_x/data-collector/pkg/parser/jsonpath"
 	"gitlab.com/mek_x/data-collector/pkg/sink"
-	"gitlab.com/mek_x/data-collector/pkg/sink/stdout"
 
 	_ "gitlab.com/mek_x/data-collector/internal/modules"
 )
@@ -58,7 +57,6 @@ func main() {
 
 	collectorsCfg := make(map[string]map[string]interface{})
 	parseConfig(y, "$.collectors", &collectorsCfg)
-
 	collectors := make(map[string]collector.Collector)
 
 	for i, v := range collectorsCfg {
@@ -90,14 +88,18 @@ func main() {
 	sinks := make(map[string]sink.Sink)
 
 	for i, v := range sinksCfg {
-		switch v["type"].(string) {
-		case "stdout":
-			s := stdout.Stdout{}
-			sinks[i] = s
-			log.Print("added sink: ", i, ", type: ", v["type"])
-		default:
-			log.Printf("config: sinks.%s - unknown type: %s", i, v["type"])
+		sinkType := v["type"].(string)
+		sinkInit, ok := sink.Registry[sinkType]
+		if !ok {
+			log.Print(i, ": unknown sink type - ", sinkType)
+			continue
 		}
+		s := sinkInit()
+		if s == nil {
+			log.Print(i, ": can't initialize sink, config error?")
+		}
+		sinks[i] = s
+		log.Print("added sink: ", i, ", type: ", v["type"])
 	}
 
 	dispatchersCfg := make([]map[string]interface{}, 0)
