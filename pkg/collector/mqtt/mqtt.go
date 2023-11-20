@@ -48,6 +48,10 @@ func New(p any) collector.Collector {
 		return nil
 	}
 
+	if opt.Url == "" {
+		return nil
+	}
+
 	ssl := tls.Config{
 		RootCAs: nil,
 	}
