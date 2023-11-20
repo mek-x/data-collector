@@ -20,12 +20,14 @@ type fileSource struct {
 	end      chan bool
 }
 
+/* Main config structure. Descibes `params` field from configuration yaml. */
 type FileParams struct {
 	Interval int
 }
 
 var _ collector.Collector = (*fileSource)(nil)
 
+/* In this module init function we register our collector in global collector registry */
 func init() {
 	collector.Registry.Add("file", New)
 }
@@ -35,6 +37,11 @@ func New(p any) collector.Collector {
 
 	if err := mapstructure.Decode(p, &opt); err != nil {
 		return nil
+	}
+
+	// Set defaults
+	if opt.Interval == 0 {
+		opt.Interval = 60
 	}
 
 	return &fileSource{
