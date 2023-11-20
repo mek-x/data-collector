@@ -2,6 +2,7 @@ package main
 
 import (
 	"bytes"
+	"errors"
 	"fmt"
 	"log"
 	"os"
@@ -64,7 +65,9 @@ func main() {
 		collectorType := v["type"].(string)
 		var params interface{}
 		err := parseConfig(y, fmt.Sprintf("$.collectors.%s.params", i), &params)
-		if err != nil {
+		if errors.Is(err, yaml.ErrNotFoundNode) {
+			params = nil
+		} else if err != nil {
 			log.Print(i, ": error parsing collector params: ", err)
 			continue
 		}
