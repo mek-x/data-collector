@@ -12,5 +12,6 @@ import (
 	_ "gitlab.com/mek_x/data-collector/pkg/dispatcher/cron"
 
 	/* sinks */
+	_ "gitlab.com/mek_x/data-collector/pkg/sink/gotify"
 	_ "gitlab.com/mek_x/data-collector/pkg/sink/stdout"
 )

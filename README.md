@@ -83,7 +83,7 @@ example, like [file collector](pkg/collector/file/file.go).
 4. Sinks:
     - [x] support for templating output
     - [ ] generic REST (template/json)
-    - [ ] gotify (template)
+    - [x] gotify (template)
     - [ ] iotplotter (json)
     - [ ] file (csv)
     - [x] stdout (for debugging or template)
