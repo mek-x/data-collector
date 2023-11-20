@@ -5,6 +5,7 @@ import (
 	"log"
 
 	mqtt "github.com/eclipse/paho.mqtt.golang"
+	"github.com/mitchellh/mapstructure"
 	"gitlab.com/mek_x/data-collector/internal/utils"
 	"gitlab.com/mek_x/data-collector/pkg/collector"
 	"gitlab.com/mek_x/data-collector/pkg/parser"
@@ -35,7 +36,17 @@ var connectLostHandler mqtt.ConnectionLostHandler = func(client mqtt.Client, err
 	log.Printf("MQTT connection lost: %v", err)
 }
 
-func NewClient(opt MqttParams) *mqttSource {
+func init() {
+	collector.Registry.Add("mqtt", New)
+}
+
+func New(p any) collector.Collector {
+
+	var opt MqttParams
+
+	if err := mapstructure.Decode(p, &opt); err != nil {
+		return nil
+	}
 
 	ssl := tls.Config{
 		RootCAs: nil,

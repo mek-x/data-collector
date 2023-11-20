@@ -9,8 +9,6 @@ import (
 
 	yaml "github.com/goccy/go-yaml"
 	"gitlab.com/mek_x/data-collector/pkg/collector"
-	"gitlab.com/mek_x/data-collector/pkg/collector/file"
-	"gitlab.com/mek_x/data-collector/pkg/collector/mqtt"
 	"gitlab.com/mek_x/data-collector/pkg/datastore"
 	"gitlab.com/mek_x/data-collector/pkg/dispatcher"
 	"gitlab.com/mek_x/data-collector/pkg/dispatcher/cron"
@@ -18,6 +16,8 @@ import (
 	"gitlab.com/mek_x/data-collector/pkg/parser/jsonpath"
 	"gitlab.com/mek_x/data-collector/pkg/sink"
 	"gitlab.com/mek_x/data-collector/pkg/sink/stdout"
+
+	_ "gitlab.com/mek_x/data-collector/internal/modules"
 )
 
 func parseConfig(in []byte, yamlPath string, object interface{}) error {
@@ -61,20 +61,25 @@ func main() {
 	collectors := make(map[string]collector.Collector)
 
 	for i, v := range collectorsCfg {
-		switch v["type"].(string) {
-		case "mqtt":
-			params := mqtt.MqttParams{}
-			parseConfig(y, fmt.Sprintf("$.collectors.%s.params", i), &params)
-			collectors[i] = mqtt.NewClient(params)
-			log.Print("added collector: ", i, ", type: ", v["type"])
-		case "file":
-			var interval int
-			parseConfig(y, fmt.Sprintf("$.collectors.%s.params", i), &interval)
-			collectors[i] = file.New(interval)
-			log.Print("added collector: ", i, ", type: ", v["type"])
-		default:
-			log.Printf("config: collectors.%s - unknown type: %s", i, v["type"])
+		collectorType := v["type"].(string)
+		var params interface{}
+		err := parseConfig(y, fmt.Sprintf("$.collectors.%s.params", i), &params)
+		if err != nil {
+			log.Print(i, ": error parsing collector params: ", err)
+			continue
 		}
+		collectorInit, ok := collector.Registry[collectorType]
+		if !ok {
+			log.Print(i, ": unknown collector type - ", collectorType)
+			continue
+		}
+		c := collectorInit(params)
+		if c == nil {
+			log.Print(i, ": can't initialize collector, config error?")
+			continue
+		}
+		collectors[i] = c
+		log.Print("added collector: ", i, ", type: ", collectorType)
 	}
 
 	sinksCfg := make(map[string]map[string]interface{})

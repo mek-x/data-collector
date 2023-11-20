@@ -4,6 +4,7 @@ import (
 	"os"
 	"time"
 
+	"github.com/mitchellh/mapstructure"
 	"gitlab.com/mek_x/data-collector/pkg/collector"
 	"gitlab.com/mek_x/data-collector/pkg/parser"
 )
@@ -19,12 +20,26 @@ type fileSource struct {
 	end      chan bool
 }
 
+type FileParams struct {
+	Interval int
+}
+
 var _ collector.Collector = (*fileSource)(nil)
 
-func New(interval int) *fileSource {
+func init() {
+	collector.Registry.Add("file", New)
+}
+
+func New(p any) collector.Collector {
+	var opt FileParams
+
+	if err := mapstructure.Decode(p, &opt); err != nil {
+		return nil
+	}
+
 	return &fileSource{
 		sources:  make([]source, 0),
-		interval: interval,
+		interval: opt.Interval,
 		end:      make(chan bool),
 	}
 }
