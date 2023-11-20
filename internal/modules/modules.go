@@ -15,4 +15,5 @@ import (
 	_ "gitlab.com/mek_x/data-collector/pkg/sink/gotify"
 	_ "gitlab.com/mek_x/data-collector/pkg/sink/iotplotter"
 	_ "gitlab.com/mek_x/data-collector/pkg/sink/stdout"
+	_ "gitlab.com/mek_x/data-collector/pkg/sink/windy"
 )
