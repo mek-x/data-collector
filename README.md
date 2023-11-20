@@ -84,7 +84,8 @@ example, like [file collector](pkg/collector/file/file.go).
     - [x] support for templating output
     - [ ] generic REST (template/json)
     - [x] gotify (template)
-    - [ ] iotplotter (json)
+    - [x] iotplotter (json)
+    - [x] windy (json)
     - [ ] file (csv)
     - [x] stdout (for debugging or template)
 5. Configuration:
