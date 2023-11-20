@@ -11,11 +11,11 @@ type Collector interface {
 }
 
 type Init func(params any) Collector
-type collectorRegistry map[string]Init
+type registry map[string]Init
 
 /* Main registry of all available collector classes */
-var Registry = make(collectorRegistry)
+var Registry = make(registry)
 
-func (c collectorRegistry) Add(name string, constructor Init) {
+func (c registry) Add(name string, constructor Init) {
 	c[name] = constructor
 }

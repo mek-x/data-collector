@@ -11,10 +11,10 @@ type SinkCfg struct {
 }
 
 type Init func() Sink
-type sinkRegistry map[string]Init
+type registry map[string]Init
 
-var Registry = make(sinkRegistry)
+var Registry = make(registry)
 
-func (s sinkRegistry) Add(name string, constructor Init) {
+func (s registry) Add(name string, constructor Init) {
 	s[name] = constructor
 }

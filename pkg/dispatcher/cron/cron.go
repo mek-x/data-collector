@@ -28,7 +28,12 @@ type cronDispatcher struct {
 
 var _ dispatcher.Dispatcher = (*cronDispatcher)(nil)
 
-func New(cronString string, ds datastore.DataStore) *cronDispatcher {
+func init() {
+	dispatcher.Registry.Add("cron", New)
+}
+
+func New(param any, ds datastore.DataStore) dispatcher.Dispatcher {
+	cronString := param.(string)
 	return &cronDispatcher{
 		cronString: cronString,
 		ds:         ds,

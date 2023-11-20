@@ -20,7 +20,11 @@ type jsonpathParser struct {
 
 var _ parser.Parser = (*jsonpathParser)(nil)
 
-func New(name string, store datastore.DataStore) *jsonpathParser {
+func init() {
+	parser.Registry.Add("jsonpath", New)
+}
+
+func New(name string, store datastore.DataStore) parser.Parser {
 	return &jsonpathParser{
 		name:  name,
 		store: store,
