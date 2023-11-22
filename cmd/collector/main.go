@@ -181,6 +181,7 @@ func main() {
 		c := v["collector"].(string)
 
 		collectors[c].AddDataSource(path, p)
+		log.Printf("%s: added data source (parser: %s): %s", i, parserType, path)
 	}
 
 	for _, d := range dispatchers {

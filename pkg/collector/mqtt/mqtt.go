@@ -95,7 +95,6 @@ func (m *mqttSource) Start() error {
 
 func (m *mqttSource) AddDataSource(topic string, parser parser.Parser) error {
 
-	log.Printf("adding data source: %s", topic)
 	if token := m.client.Subscribe(topic, 0, func(c mqtt.Client, msg mqtt.Message) {
 		if err := parser.Parse(msg.Payload()); err != nil {
 			log.Println("can't parse: ", err)
