@@ -6,7 +6,7 @@ import (
 	"time"
 )
 
-type Callback func(key string, t time.Time, v interface{})
+type Callback func(key string, t time.Time, v, old interface{})
 
 type elem struct {
 	stamp       time.Time
@@ -45,20 +45,22 @@ func New() *dataStore {
 
 func (d *dataStore) Publish(key string, v interface{}) {
 	d.lock.Lock()
-	defer d.lock.Unlock()
 
 	e, ok := d.store[key]
 	if !ok {
 		e = newElem()
 	}
 
+	old := e.v
 	e.v = v
 	e.stamp = time.Now()
 
 	d.store[key] = e
 
+	d.lock.Unlock()
+
 	for _, f := range e.subscribers {
-		f(key, e.stamp, e.v)
+		f(key, e.stamp, v, old)
 	}
 }
 

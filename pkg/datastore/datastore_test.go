@@ -73,7 +73,7 @@ func TestDataStore_Get(t *testing.T) {
 	}
 }
 
-func dummyCallback(k string, t time.Time, v interface{}) {}
+func dummyCallback(k string, t time.Time, v, old interface{}) {}
 
 func TestDataStore_Register(t *testing.T) {
 	type args struct {

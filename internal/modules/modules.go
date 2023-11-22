@@ -12,6 +12,7 @@ import (
 
 	/* dispatchers */
 	_ "gitlab.com/mek_x/data-collector/pkg/dispatcher/cron"
+	_ "gitlab.com/mek_x/data-collector/pkg/dispatcher/event"
 
 	/* sinks */
 	_ "gitlab.com/mek_x/data-collector/pkg/sink/gotify"

@@ -80,6 +80,8 @@ example, like [file collector](pkg/collector/file/file.go).
 3. Dispatchers:
     - [x] cron
     - [ ] event
+        - [x] simple, trigger on any publish
+        - [ ] trigger on predefined threshold
 4. Sinks:
     - [x] support for templating output
     - [ ] generic REST (template/json)
@@ -91,8 +93,8 @@ example, like [file collector](pkg/collector/file/file.go).
 5. Configuration:
     - [x] yaml support
     - [x] replacing env variables
-        - [ ] testing needed
 6. Others:
+    - [ ] tests
     - [ ] CI
 
 ## Dependencies
