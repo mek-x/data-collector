@@ -2,6 +2,9 @@ package utils
 
 import (
 	"math/rand"
+	"os"
+	"regexp"
+	"strings"
 	"time"
 )
 
@@ -21,4 +24,13 @@ func stringWithCharset(length int, charset string) string {
 
 func RandomString(length int) string {
 	return stringWithCharset(length, charset)
+}
+
+func ReplaceWithEnvVars(in string) string {
+	re := regexp.MustCompile(`%%[a-zA-Z][0-9a-zA-Z_]+%%`)
+	out := re.ReplaceAllStringFunc(in, func(s string) string {
+		s = os.Getenv(strings.Trim(s, "%"))
+		return s
+	})
+	return out
 }

@@ -16,6 +16,7 @@ import (
 	"gitlab.com/mek_x/data-collector/pkg/sink"
 
 	_ "gitlab.com/mek_x/data-collector/internal/modules"
+	"gitlab.com/mek_x/data-collector/internal/utils"
 )
 
 func parseConfig(in []byte, yamlPath string, object any) error {
@@ -44,12 +45,15 @@ func main() {
 	}
 
 	var version int
-	parseConfig(y, "$.version", &version)
+	err = parseConfig(y, "$.version", &version)
+	if err != nil {
+		log.Fatal("config file malformed: ", err)
+	}
 	if version != 1 {
 		log.Fatal("config file has not supported version: ", version)
 	}
 
-	y = []byte(os.ExpandEnv(string(y)))
+	y = []byte(utils.ReplaceWithEnvVars(string(y)))
 
 	ds := datastore.New()
 
