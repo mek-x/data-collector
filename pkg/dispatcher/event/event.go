@@ -12,6 +12,7 @@ import (
 	"gitlab.com/mek_x/data-collector/pkg/sink"
 
 	"github.com/antonmedv/expr"
+	"github.com/mitchellh/mapstructure"
 )
 
 type sinkInstance struct {
@@ -19,8 +20,14 @@ type sinkInstance struct {
 	cfg   sink.SinkCfg
 }
 
+type EventParams struct {
+	Trigger string
+	Var     string
+	Expr    string
+}
+
 type eventDispatcher struct {
-	eventString string
+	eventParams EventParams
 	sinks       []sinkInstance
 	ds          datastore.DataStore
 }
@@ -32,15 +39,26 @@ func init() {
 }
 
 func New(param any, ds datastore.DataStore) dispatcher.Dispatcher {
-	eventString := param.(string)
+	var opt EventParams
+
+	if err := mapstructure.Decode(param, &opt); err != nil {
+		return nil
+	}
+
 	return &eventDispatcher{
-		eventString: eventString,
+		eventParams: opt,
 		ds:          ds,
 		sinks:       make([]sinkInstance, 0),
 	}
 }
 
+type triggerExpr struct {
+	new any
+	old any
+}
+
 func (c *eventDispatcher) sendToAll(key string, t time.Time, v, old interface{}) {
+
 	for _, s := range c.sinks {
 
 		var toSend []byte
@@ -90,5 +108,5 @@ func (c *eventDispatcher) AddSink(s sink.Sink, cfg sink.SinkCfg) {
 		cfg:   cfg,
 	}
 	c.sinks = append(c.sinks, sink)
-	c.ds.Register([]string{c.eventString}, c.sendToAll)
+	c.ds.Register([]string{c.eventParams.Trigger}, c.sendToAll)
 }
