@@ -180,6 +180,11 @@ func main() {
 		path := v["path"].(string)
 		c := v["collector"].(string)
 
+		_, ok = collectors[c]
+		if !ok {
+			log.Print(i, ": unknown collector ", c)
+			continue
+		}
 		collectors[c].AddDataSource(path, p)
 		log.Printf("%s: added data source (parser: %s): %s", i, parserType, path)
 	}
