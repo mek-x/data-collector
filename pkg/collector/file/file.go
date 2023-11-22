@@ -51,8 +51,22 @@ func New(p any) collector.Collector {
 	}
 }
 
+func (f *fileSource) readAndParse() {
+	for _, i := range f.sources {
+		buf, err := os.ReadFile(i.path)
+		if err != nil {
+			continue
+		}
+		i.parser.Parse(buf)
+	}
+}
+
 func (f *fileSource) Start() error {
 	go func() {
+		for len(f.sources) == 0 {
+			time.Sleep(10 * time.Millisecond)
+		}
+		f.readAndParse()
 	loop:
 		for {
 			select {
@@ -61,13 +75,7 @@ func (f *fileSource) Start() error {
 				close(f.end)
 				break loop
 			case <-time.After(time.Duration(f.interval) * time.Second):
-				for _, i := range f.sources {
-					buf, err := os.ReadFile(i.path)
-					if err != nil {
-						continue
-					}
-					i.parser.Parse(buf)
-				}
+				f.readAndParse()
 			}
 		}
 	}()
