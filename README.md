@@ -72,11 +72,11 @@ example, like [file collector](pkg/collector/file/file.go).
 1. Collectors:
     - [x] mqtt
     - [x] file
-    - [ ] shell
+    - [x] shell
 2. Parsers:
     - [x] add expression eval support
     - [x] jsonpath
-    - [ ] regex
+    - [x] regex
 3. Dispatchers:
     - [x] cron
     - [ ] event

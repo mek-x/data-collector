@@ -4,6 +4,7 @@ import (
 	/* collectors */
 	_ "gitlab.com/mek_x/data-collector/pkg/collector/file"
 	_ "gitlab.com/mek_x/data-collector/pkg/collector/mqtt"
+	_ "gitlab.com/mek_x/data-collector/pkg/collector/shell"
 
 	/* parsers */
 	_ "gitlab.com/mek_x/data-collector/pkg/parser/jsonpath"
