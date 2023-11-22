@@ -14,14 +14,18 @@ collectors:
   cpuTemp:
     type: file
     params:
-      path: /sys/class/thermal/thermal_zone0/temp
+      interval: 5
+  cmd:
+    type: shell
+    params:
+      interval: 5
 
 sinks:
   plotter:
     type: iotplotter
     params:
       url: http://iotplotter.com
-      apikey: 12345
+      apikey: %%IOT_API_KEY%% # we can expand env variables using the %%VAR%% pattern
       feed: "123456789"
   gotify:
     type: gotify
@@ -54,16 +58,27 @@ data:
       cnt: "$"
   cpu:
     collector: cpuTemp
+    path: /sys/class/thermal/thermal_zone0/temp
     parser: regex
     vars:
-      temp: ".*"
+      temp: "[0-9]*"
+    conv:
+      temp: float(temp) / 1000
+  free:
+    collector: cmd
+    path: "df -BM | grep -E '/$' | awk '{print $4}'"
+    parser: regex
+    vars:
+      space: "[0-9]*"
+    conv:
+      space: float(space) / 1024
 
 dispatchers:
 - type: cron
-  param: "*/30 * * * * *"
+  param: "*/30 * * * * *" # once per 30 seconds
   sinks:
   - name: stdout
-    type: expr
+    type: expr # output will be marshalled as json
     spec: |
       {
         "data": {
@@ -82,3 +97,5 @@ dispatchers:
     type: template
     spec: |
       CPU Temp: {{ .cpu.temp }}
+      Free space: {{ .free.space }}GB
+      Current shell: %%SHELL%%
