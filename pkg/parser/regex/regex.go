@@ -57,7 +57,7 @@ func (j *regexParser) Parse(buf []byte) error {
 		if ok {
 			value, err = expr.Eval(c, map[string]interface{}{k: a})
 			if err != nil {
-				log.Println(j.name, ": bad conversion for variable", k, ":", err)
+				log.Printf("%s: bad conversion for variable '%s' (%s): %s", j.name, k, a, err)
 				value = a
 			}
 		} else {
