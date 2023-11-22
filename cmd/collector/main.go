@@ -9,14 +9,15 @@ import (
 	"time"
 
 	yaml "github.com/goccy/go-yaml"
+
+	_ "gitlab.com/mek_x/data-collector/internal/modules"
+
+	"gitlab.com/mek_x/data-collector/internal/utils"
 	"gitlab.com/mek_x/data-collector/pkg/collector"
 	"gitlab.com/mek_x/data-collector/pkg/datastore"
 	"gitlab.com/mek_x/data-collector/pkg/dispatcher"
 	"gitlab.com/mek_x/data-collector/pkg/parser"
 	"gitlab.com/mek_x/data-collector/pkg/sink"
-
-	_ "gitlab.com/mek_x/data-collector/internal/modules"
-	"gitlab.com/mek_x/data-collector/internal/utils"
 )
 
 func parseConfig(in []byte, yamlPath string, object any) error {
