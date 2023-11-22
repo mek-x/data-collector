@@ -7,6 +7,7 @@ import (
 
 	/* parsers */
 	_ "gitlab.com/mek_x/data-collector/pkg/parser/jsonpath"
+	_ "gitlab.com/mek_x/data-collector/pkg/parser/regex"
 
 	/* dispatchers */
 	_ "gitlab.com/mek_x/data-collector/pkg/dispatcher/cron"
