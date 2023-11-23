@@ -6,7 +6,6 @@ MIT](https://img.shields.io/badge/License-MIT-brightgreen.svg)](https://img.shie
 Card](https://goreportcard.com/badge/gitlab.com/mek_x/data-collector)](https://goreportcard.com/report/gitlab.com/mek_x/data-collector)
 [![pipeline status](https://gitlab.com/mek_x/data-collector/badges/main/pipeline.svg)](https://gitlab.com/mek_x/data-collector/-/commits/main)
 [![coverage report](https://gitlab.com/mek_x/data-collector/badges/main/coverage.svg)](https://gitlab.com/mek_x/data-collector/-/commits/main) 
-[![Latest Release](https://gitlab.com/mek_x/data-collector/-/badges/release.svg)](https://gitlab.com/mek_x/data-collector/-/releases)
 
 
 This is a program used to gather data from various sources (like MQTT topics) and push the data to different sinks (e.g.
@@ -83,9 +82,9 @@ example, like [file collector](pkg/collector/file/file.go).
     - [x] regex
 3. Dispatchers:
     - [x] cron
-    - [ ] event
+    - [x] event
         - [x] simple, trigger on any publish
-        - [ ] trigger on predefined threshold
+        - [x] trigger on predefined threshold
 4. Sinks:
     - [x] support for templating output
     - [ ] generic REST (template/json)
@@ -99,7 +98,7 @@ example, like [file collector](pkg/collector/file/file.go).
     - [x] replacing env variables
 6. Others:
     - [ ] tests
-    - [ ] CI
+    - [x] CI
 
 ## Dependencies
 
