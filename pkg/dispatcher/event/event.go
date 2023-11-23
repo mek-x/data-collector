@@ -53,11 +53,53 @@ func New(param any, ds datastore.DataStore) dispatcher.Dispatcher {
 }
 
 type triggerExpr struct {
-	new any
-	old any
+	New any `expr:"new"`
+	Old any `expr:"old"`
 }
 
-func (c *eventDispatcher) sendToAll(key string, t time.Time, v, old interface{}) {
+func (c *eventDispatcher) sendToAll(key string, t time.Time, v, old any) {
+
+	var commence bool
+
+	_, ok := v.(map[string]any)
+	if !ok {
+		log.Print("input error")
+		return
+	}
+	newV, ok := v.(map[string]any)[c.eventParams.Var]
+	if !ok {
+		log.Print("var not found: ", c.eventParams.Var)
+		return
+	}
+
+	_, ok = old.(map[string]any)
+	if !ok {
+		return
+	}
+
+	oldV, ok := old.(map[string]any)[c.eventParams.Var]
+	if !ok {
+		log.Print("var not found: ", c.eventParams.Var)
+		return
+	}
+
+	values := triggerExpr{newV, oldV}
+
+	o, err := expr.Eval(c.eventParams.Expr, values)
+	if err != nil {
+		log.Print("expr error: ", err)
+		return
+	}
+
+	commence, ok = o.(bool)
+	if !ok {
+		log.Print("expr output value must be boolean")
+		return
+	}
+
+	if !commence {
+		return
+	}
 
 	for _, s := range c.sinks {
 
