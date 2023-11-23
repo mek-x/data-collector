@@ -4,6 +4,10 @@
 MIT](https://img.shields.io/badge/License-MIT-brightgreen.svg)](https://img.shields.io/badge/License-MIT-brightgreen.svg)
 [![Go Report
 Card](https://goreportcard.com/badge/gitlab.com/mek_x/data-collector)](https://goreportcard.com/report/gitlab.com/mek_x/data-collector)
+[![pipeline status](https://gitlab.com/mek_x/data-collector/badges/main/pipeline.svg)](https://gitlab.com/mek_x/data-collector/-/commits/main)
+[![coverage report](https://gitlab.com/mek_x/data-collector/badges/main/coverage.svg)](https://gitlab.com/mek_x/data-collector/-/commits/main) 
+[![Latest Release](https://gitlab.com/mek_x/data-collector/-/badges/release.svg)](https://gitlab.com/mek_x/data-collector/-/releases)
+
 
 This is a program used to gather data from various sources (like MQTT topics) and push the data to different sinks (e.g.
 to file, Gotify notification service, IOTPlotter, database). Dynamically configurable and intended to be deployed as a
