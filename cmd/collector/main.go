@@ -6,7 +6,8 @@ import (
 	"fmt"
 	"log"
 	"os"
-	"time"
+	"os/signal"
+	"syscall"
 
 	yaml "github.com/goccy/go-yaml"
 
@@ -198,10 +199,12 @@ func main() {
 		d.Start()
 	}
 
-	for i := 0; i < 10; i++ {
-		time.Sleep(1 * time.Second)
-	}
+	c := make(chan os.Signal, 1)
+	signal.Notify(c, os.Interrupt, syscall.SIGTERM)
 
+	<-c
+
+	log.Print("Exiting application...")
 	for _, c := range collectors {
 		c.End()
 	}
