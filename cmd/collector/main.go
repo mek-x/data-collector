@@ -21,6 +21,9 @@ import (
 	"gitlab.com/mek_x/data-collector/pkg/sink"
 )
 
+// this should be normally set using the ldflags variable setting
+var version = "unknown"
+
 func parseConfig(in []byte, yamlPath string, object any) error {
 
 	path, err := yaml.PathString(yamlPath)
@@ -45,6 +48,8 @@ func main() {
 	if err != nil {
 		log.Fatal("can't read config file: ", err)
 	}
+
+	log.Print("Starting DataCollector v ", version)
 
 	var version int
 	err = parseConfig(y, "$.version", &version)
