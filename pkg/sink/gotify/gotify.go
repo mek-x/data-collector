@@ -58,7 +58,7 @@ func (g *gotify) Send(b []byte) error {
 		url.Values{
 			"message":  {string(b)},
 			"title":    {g.title},
-			"priority": {fmt.Sprint(5)},
+			"priority": {fmt.Sprint(g.priority)},
 		})
 
 	return err
