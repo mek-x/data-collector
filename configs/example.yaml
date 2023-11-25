@@ -75,10 +75,10 @@ data:
 
 dispatchers:
 - type: cron
-  param: "*/30 * * * * *" # once per 30 seconds
+  param: "*/30 * * * * *" # once per 30 seconds, cron is per second string so uses 6 columns instead of traditional 5
   sinks:
   - name: stdout
-    type: expr # output will be marshalled as json
+    type: expr # output will be marshalled as json and expr is used to create the data
     spec: |
       {
         "data": {
@@ -87,15 +87,16 @@ dispatchers:
         }
       }
   - name: stdout
-    type: template
+    type: template # output will be passed as string after the go template is applied
     spec: |
       Cnt: {{ .cnt.cnt }}
-- type: cron
-  param: "*/3 * * * * *"
+- type: event
+  param:
+    trigger: outside  # this is triggering data source
+    var: timestamp    # this is variable we want to be the threshold value
+    expr: new != old  # `new` is the latest value, `old` is the previous value
   sinks:
   - name: stdout
     type: template
     spec: |
-      CPU Temp: {{ .cpu.temp }}
-      Free space: {{ .free.space }}GB
-      Current shell: %%SHELL%%
+      EVENT: new outside measurement!
