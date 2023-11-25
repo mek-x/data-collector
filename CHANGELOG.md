@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.2.0 (2023-11-25)
+
+- (dispatcher/event) fix double event trigger when multiple sinks are assigned
+- (collector/mqtt) subscribe after reconnect
+
 ## 0.1.3 (2023-11-24)
 
 - (sinks/gotify) fixed priority was not being set in message from params
