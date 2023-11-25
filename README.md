@@ -4,13 +4,14 @@
 MIT](https://img.shields.io/badge/License-MIT-brightgreen.svg)](https://img.shields.io/badge/License-MIT-brightgreen.svg)
 [![Go Report
 Card](https://goreportcard.com/badge/gitlab.com/mek_x/data-collector)](https://goreportcard.com/report/gitlab.com/mek_x/data-collector)
-[![pipeline status](https://gitlab.com/mek_x/data-collector/badges/main/pipeline.svg)](https://gitlab.com/mek_x/data-collector/-/commits/main)
-[![coverage report](https://gitlab.com/mek_x/data-collector/badges/main/coverage.svg)](https://gitlab.com/mek_x/data-collector/-/commits/main) 
-
+[![pipeline
+status](https://gitlab.com/mek_x/data-collector/badges/main/pipeline.svg)](https://gitlab.com/mek_x/data-collector/-/commits/main)
+[![coverage
+report](https://gitlab.com/mek_x/data-collector/badges/main/coverage.svg)](https://gitlab.com/mek_x/data-collector/-/commits/main)
 
 This is a program used to gather data from various sources (like MQTT topics) and push the data to different sinks (e.g.
-to file, Gotify notification service, IOTPlotter). Dynamically configurable and intended to be deployed as a containerized
-service.
+to file, Gotify notification service, IOTPlotter). Dynamically configurable and intended to be deployed as a
+containerized service.
 
 ## Overview
 
@@ -52,13 +53,14 @@ Configuration is in YAML file. Example is [here](./configs/example.yaml)
 
 ### Environment variable substitution
 
-Using the `%%ENV_VARIABLE%%` notation it's possible to substitute this entries with environment variables, which
-may be useful to use same config in different environments, but with some things that are different 
-(e.g. `HOSTNAME`, some kind of secrets).
+Using the `%%ENV_VARIABLE%%` notation it's possible to substitute this entries with environment variables, which may be
+useful to use same config in different environments, but with some things that are different (e.g. `HOSTNAME`, some kind
+of secrets).
 
 ### Support for evaluating expressions
 
 Used in:
+
 - `data.<name>.conv` - to convert variable, e.g. multiply the value by 10 (`val * 10`)
 - `dispatchers.sink[].spec` - when `type` is `expr` it can be used for templating, e.g. to generate json (`toJSON(val)`)
 
@@ -66,12 +68,12 @@ Syntax for the evaluation is documented here: [Expr Language Definition](https:/
 
 ## Deployment
 
-This project uses `ko` as a build system.
+This project uses `ko` as a build system. See the current defaults in the [config file](.ko.yaml).
 
 ### Docker containers
 
-By default containers for 32/64 bit arm and 64 x86 architectures are being built. Example deployment using `docker-compose.yml`
-may be like in this example:
+By default containers for 32/64 bit arm and 64 x86 architectures are being built. Example deployment using
+`docker-compose.yml` may be like in this example:
 
 ```yaml
 version: '2'
@@ -89,8 +91,8 @@ services:
     restart: always
 ```
 
-Configuration file (`config.yaml`) needs to be manually copied to the `config` volume in this case.
-`command` is giving an argument to the `data-collector` application, where to look for it.
+Configuration file (`config.yaml`) needs to be manually copied to the `config` volume in this case. `command` is giving
+an argument to the `data-collector` application, where to look for it.
 
 ## Development
 
@@ -99,37 +101,6 @@ Configuration file (`config.yaml`) needs to be manually copied to the `config` v
 Adding additional collectors, parsers, dispatchers and sinks is pretty much self-contained. Only necessary things is to
 add the module code itself and import it in `internal/modules/modules.go`. Take a look at the other modules as an
 example, like [file collector](pkg/collector/file/file.go).
-
-## Todo list
-
-1. Collectors:
-    - [x] mqtt
-    - [x] file
-    - [x] shell
-2. Parsers:
-    - [x] add expression eval support
-    - [x] jsonpath
-    - [x] regex
-3. Dispatchers:
-    - [x] cron
-    - [x] event
-        - [x] simple, trigger on any publish
-        - [x] trigger on predefined threshold
-4. Sinks:
-    - [x] support for templating output
-    - [ ] generic REST (template/json)
-    - [x] gotify (template)
-    - [x] iotplotter (json)
-    - [x] windy (json)
-    - [ ] file (csv)
-    - [x] stdout (for debugging or template)
-5. Configuration:
-    - [x] yaml support
-    - [x] replacing env variables
-6. Others:
-    - [ ] tests
-    - [x] CI
-    - [ ] documentation
 
 ## Dependencies
 
