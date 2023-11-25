@@ -45,11 +45,15 @@ func New(param any, ds datastore.DataStore) dispatcher.Dispatcher {
 		return nil
 	}
 
-	return &eventDispatcher{
+	c := &eventDispatcher{
 		eventParams: opt,
 		ds:          ds,
 		sinks:       make([]sinkInstance, 0),
 	}
+
+	c.ds.Register([]string{c.eventParams.Trigger}, c.sendToAll)
+
+	return c
 }
 
 type triggerExpr struct {
@@ -150,5 +154,4 @@ func (c *eventDispatcher) AddSink(s sink.Sink, cfg sink.SinkCfg) {
 		cfg:   cfg,
 	}
 	c.sinks = append(c.sinks, sink)
-	c.ds.Register([]string{c.eventParams.Trigger}, c.sendToAll)
 }
