@@ -14,20 +14,20 @@ const baseUrl = "https://stations.windy.com/pws/update"
 
 type WindyParams struct {
 	Apikey string
-	Id     int
+	Id     uint
 }
 
 type windy struct {
 	apikey string
-	id     int
+	id     uint
 }
 
 type observation struct {
 	Temp      float64 `json:"temp"`
 	Humi      float64 `json:"rh"`
 	Pressure  float64 `json:"mbar"`
-	Timestamp int     `json:"ts"`
-	Station   int     `json:"station"`
+	Timestamp uint    `json:"ts"`
+	Station   uint    `json:"station"`
 }
 
 type messageFormat struct {
@@ -48,7 +48,7 @@ func New(p any) sink.Sink {
 		return nil
 	}
 
-	if opt.Apikey == "" || opt.Id == 0 {
+	if opt.Apikey == "" {
 		return nil
 	}
 
