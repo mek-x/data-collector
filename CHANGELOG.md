@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.2.1 (2024-01-04)
+
+- (sinks/windy) fix sink when station id is 0
+
 ## 0.2.0 (2023-11-25)
 
 - (dispatcher/event) fix double event trigger when multiple sinks are assigned
