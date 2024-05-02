@@ -1,5 +1,19 @@
 # Changelog
 
+## 0.2.2 (2024-05-02)
+
+- (sinks/gotify) add template support for gotify title, example:
+    add in config:
+    ```yml
+    ...
+    sinks:
+      gotify:
+        params:
+          title: {{ now "15:04" }}: report from machine
+    ...
+    ```
+    This will add hour and minute in title of gotify message.
+
 ## 0.2.1 (2024-01-04)
 
 - (sinks/windy) fix sink when station id is 0
