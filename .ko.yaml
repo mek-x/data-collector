@@ -6,7 +6,7 @@ builds:
   main: ./cmd/collector
   flags:
   - -tags
-  - netgo
+  - netgo,timetzdata
   ldflags:
   - -s -w
   - -extldflags "-static"

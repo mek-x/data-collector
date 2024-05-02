@@ -1,5 +1,8 @@
 # Changelog
 
+## 0.2.4 (2024-05-02)
+
+- ko.yaml: import embedded timezone database into application
 ## 0.2.3 (2024-05-02)
 
 - (sinks/gotify) hotfix for title
