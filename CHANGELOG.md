@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.2.3 (2024-05-02)
+
+- (sinks/gotify) hotfix for title
+
 ## 0.2.2 (2024-05-02)
 
 - (sinks/gotify) add template support for gotify title, example:
@@ -9,7 +13,7 @@
     sinks:
       gotify:
         params:
-          title: {{ now "15:04" }}: report from machine
+          title: '{{ now "15:04" }}: report from machine'
     ...
     ```
     This will add hour and minute in title of gotify message.

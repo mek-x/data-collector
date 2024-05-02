@@ -67,9 +67,8 @@ func (g *gotify) Send(b []byte) error {
 		return err
 	}
 
-	var out string
-
-	title := bytes.NewBufferString(out)
+	var buf string
+	title := bytes.NewBufferString(buf)
 
 	// Run the template to verify the output.
 	err = tmpl.Execute(title, nil)
@@ -80,7 +79,7 @@ func (g *gotify) Send(b []byte) error {
 	_, err = http.PostForm(fmt.Sprintf("%s/message?token=%s", g.url, g.token),
 		url.Values{
 			"message":  {string(b)},
-			"title":    {out},
+			"title":    {title.String()},
 			"priority": {fmt.Sprint(g.priority)},
 		})
 
