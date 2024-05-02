@@ -1,9 +1,12 @@
 package gotify
 
 import (
+	"bytes"
 	"fmt"
 	"net/http"
 	"net/url"
+	"text/template"
+	"time"
 
 	"github.com/mitchellh/mapstructure"
 	"gitlab.com/mek_x/data-collector/pkg/sink"
@@ -54,10 +57,30 @@ func New(p any) sink.Sink {
 }
 
 func (g *gotify) Send(b []byte) error {
-	_, err := http.PostForm(fmt.Sprintf("%s/message?token=%s", g.url, g.token),
+
+	fMap := template.FuncMap{
+		"now": func(f string) string { return time.Now().Format(f) },
+	}
+
+	tmpl, err := template.New("title").Funcs(fMap).Parse(g.title)
+	if err != nil {
+		return err
+	}
+
+	var out string
+
+	title := bytes.NewBufferString(out)
+
+	// Run the template to verify the output.
+	err = tmpl.Execute(title, nil)
+	if err != nil {
+		return err
+	}
+
+	_, err = http.PostForm(fmt.Sprintf("%s/message?token=%s", g.url, g.token),
 		url.Values{
 			"message":  {string(b)},
-			"title":    {g.title},
+			"title":    {out},
 			"priority": {fmt.Sprint(g.priority)},
 		})
 
