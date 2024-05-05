@@ -95,7 +95,7 @@ func TestDataStore_Register(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			d := New()
-			d.Register(tt.args.keys, tt.args.f)
+			d.Register(tt.args.keys, tt.args.f, 0, nil)
 			for _, v := range tt.args.keys {
 				for _, s := range d.store[v].subscribers {
 					if s != nil {

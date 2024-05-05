@@ -24,6 +24,7 @@ type EventParams struct {
 	Trigger string
 	Var     string
 	Expr    string
+	Timeout uint
 }
 
 type eventDispatcher struct {
@@ -51,7 +52,7 @@ func New(param any, ds datastore.DataStore) dispatcher.Dispatcher {
 		sinks:       make([]sinkInstance, 0),
 	}
 
-	c.ds.Register([]string{c.eventParams.Trigger}, c.sendToAll)
+	c.ds.Register([]string{c.eventParams.Trigger}, c.sendToAll, time.Duration(opt.Timeout)*time.Second, c.alert)
 
 	return c
 }
@@ -111,7 +112,9 @@ func (c *eventDispatcher) sendToAll(key string, t time.Time, v, old any) {
 
 		switch s.cfg.Type {
 		case "expr":
-			output, err := expr.Eval(s.cfg.Spec, c.ds.Map())
+			env := c.ds.Map()
+			env["IsTimeout"] = func() bool { return false }
+			output, err := expr.Eval(s.cfg.Spec, env)
 			if err != nil {
 				log.Println("can't run expr: ", err)
 				continue
@@ -123,7 +126,52 @@ func (c *eventDispatcher) sendToAll(key string, t time.Time, v, old any) {
 				continue
 			}
 		case "template":
-			t := template.Must(template.New("msg").Parse(s.cfg.Spec))
+			fMap := template.FuncMap{"IsTimeout": func() bool { return true }}
+			t := template.Must(template.New("msg").Funcs(fMap).Parse(s.cfg.Spec))
+			b := &bytes.Buffer{}
+			err := t.Execute(b, c.ds.Map())
+			if err != nil {
+				log.Print("can't execute template: ", err)
+				continue
+			}
+			toSend = b.Bytes()
+		default:
+			log.Printf("unknown sink (%s) data type: %s", s.cfg.Name, s.cfg.Type)
+			continue
+		}
+
+		log.Print("Sending to: ", s.cfg.Name)
+		err := s.iface.Send(toSend)
+		if err != nil {
+			log.Print("Sink error: ", err)
+		}
+	}
+}
+
+func (c *eventDispatcher) alert(key string, t time.Time, v any) {
+	for _, s := range c.sinks {
+
+		var toSend []byte
+
+		switch s.cfg.Type {
+		case "expr":
+			env := c.ds.Map()
+			env["IsTimeout"] = func() bool { return true }
+
+			output, err := expr.Eval(s.cfg.Spec, env)
+			if err != nil {
+				log.Println("can't run expr: ", err)
+				continue
+			}
+
+			toSend, err = json.Marshal(output)
+			if err != nil {
+				log.Println("can't encode json: ", err)
+				continue
+			}
+		case "template":
+			fMap := template.FuncMap{"IsTimeout": func() bool { return true }}
+			t := template.Must(template.New("msg").Funcs(fMap).Parse(s.cfg.Spec))
 			b := &bytes.Buffer{}
 			err := t.Execute(b, c.ds.Map())
 			if err != nil {

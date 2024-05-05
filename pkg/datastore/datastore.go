@@ -6,18 +6,22 @@ import (
 	"time"
 )
 
-type Callback func(key string, t time.Time, v, old interface{})
+type Callback func(key string, t time.Time, v, old any)
+type TimeoutF func(key string, t time.Time, v any)
 
 type elem struct {
 	stamp       time.Time
 	v           interface{}
 	subscribers []Callback
+	timer       *time.Timer
+	timeout     time.Duration
+	tf          TimeoutF
 }
 
 type DataStore interface {
 	Publish(key string, v interface{})
 	Get(key string) (interface{}, time.Time, error)
-	Register(keys []string, f Callback)
+	Register(keys []string, f Callback, timeout time.Duration, tf TimeoutF)
 	Map() map[string]any
 }
 
@@ -33,6 +37,9 @@ func newElem() elem {
 		stamp:       time.Now(),
 		subscribers: make([]Callback, 0),
 		v:           nil,
+		timer:       nil,
+		timeout:     0,
+		tf:          nil,
 	}
 }
 
@@ -49,6 +56,10 @@ func (d *dataStore) Publish(key string, v interface{}) {
 	e, ok := d.store[key]
 	if !ok {
 		e = newElem()
+	} else {
+		if e.timer != nil && e.timeout > 0 {
+			e.timer.Stop()
+		}
 	}
 
 	old := e.v
@@ -56,6 +67,12 @@ func (d *dataStore) Publish(key string, v interface{}) {
 	e.stamp = time.Now()
 
 	d.store[key] = e
+
+	if e.timeout > 0 {
+		e.timer = time.AfterFunc(e.timeout, func() {
+			e.tf(key, e.stamp, e.v)
+		})
+	}
 
 	d.lock.Unlock()
 
@@ -76,7 +93,7 @@ func (d *dataStore) Get(key string) (interface{}, time.Time, error) {
 	return e.v, e.stamp, nil
 }
 
-func (d *dataStore) Register(keys []string, f Callback) {
+func (d *dataStore) Register(keys []string, f Callback, timeout time.Duration, tf TimeoutF) {
 	d.lock.Lock()
 	defer d.lock.Unlock()
 
@@ -84,8 +101,21 @@ func (d *dataStore) Register(keys []string, f Callback) {
 		e, ok := d.store[k]
 		if !ok {
 			e = newElem()
+		} else {
+			if e.timer != nil && e.timeout > 0 {
+				e.timer.Stop()
+			}
 		}
+
 		e.subscribers = append(e.subscribers, f)
+
+		if timeout > 0 {
+			e.timeout = timeout
+			e.tf = tf
+			e.timer = time.AfterFunc(e.timeout, func() {
+				e.tf(k, e.stamp, e.v)
+			})
+		}
 		d.store[k] = e
 	}
 }

@@ -95,8 +95,13 @@ dispatchers:
     trigger: outside  # this is triggering data source
     var: timestamp    # this is variable we want to be the threshold value
     expr: new != old  # `new` is the latest value, `old` is the previous value
+    timeout: 60       # timeout triggered when no update in data source
   sinks:
   - name: stdout
     type: template
     spec: |
-      EVENT: new outside measurement!
+      EVENT: {{ if IsTimeout }}no update! {{ else }} new outside measurement! {{ end }}
+  - name: stdout
+    type: expr
+    spec: |
+      IsTimeout() ? "timeout" : "ok"

@@ -1,8 +1,13 @@
 # Changelog
 
+## 0.2.5 ()
+
+- (sinks/event) add timeout trigger and IsTimeout function in sinks templates
+
 ## 0.2.4 (2024-05-02)
 
 - ko.yaml: import embedded timezone database into application
+
 ## 0.2.3 (2024-05-02)
 
 - (sinks/gotify) hotfix for title
