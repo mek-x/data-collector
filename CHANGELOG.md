@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.2.6 (2024-05-08)
+
+- (datastore) fix timeout timer reset issue
+
 ## 0.2.5 (2024-05-08)
 
 - (sinks/event) add timeout trigger and IsTimeout function in sinks templates
