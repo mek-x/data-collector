@@ -33,6 +33,11 @@ type eventDispatcher struct {
 	ds          datastore.DataStore
 }
 
+type triggerExpr struct {
+	New any `expr:"new"`
+	Old any `expr:"old"`
+}
+
 var _ dispatcher.Dispatcher = (*eventDispatcher)(nil)
 
 func init() {
@@ -57,9 +62,47 @@ func New(param any, ds datastore.DataStore) dispatcher.Dispatcher {
 	return c
 }
 
-type triggerExpr struct {
-	New any `expr:"new"`
-	Old any `expr:"old"`
+func (c *eventDispatcher) dispatch(timeout bool) {
+	for _, s := range c.sinks {
+
+		var toSend []byte
+
+		switch s.cfg.Type {
+		case "expr":
+			env := c.ds.Map()
+			env["IsTimeout"] = func() bool { return timeout }
+			output, err := expr.Eval(s.cfg.Spec, env)
+			if err != nil {
+				log.Println("can't run expr: ", err)
+				continue
+			}
+
+			toSend, err = json.Marshal(output)
+			if err != nil {
+				log.Println("can't encode json: ", err)
+				continue
+			}
+		case "template":
+			fMap := template.FuncMap{"IsTimeout": func() bool { return timeout }}
+			t := template.Must(template.New("msg").Funcs(fMap).Parse(s.cfg.Spec))
+			b := &bytes.Buffer{}
+			err := t.Execute(b, c.ds.Map())
+			if err != nil {
+				log.Print("can't execute template: ", err)
+				continue
+			}
+			toSend = b.Bytes()
+		default:
+			log.Printf("unknown sink (%s) data type: %s", s.cfg.Name, s.cfg.Type)
+			continue
+		}
+
+		log.Print("Sending to: ", s.cfg.Name)
+		err := s.iface.Send(toSend)
+		if err != nil {
+			log.Print("Sink error: ", err)
+		}
+	}
 }
 
 func (c *eventDispatcher) sendToAll(key string, t time.Time, v, old any) {
@@ -106,90 +149,11 @@ func (c *eventDispatcher) sendToAll(key string, t time.Time, v, old any) {
 		return
 	}
 
-	for _, s := range c.sinks {
-
-		var toSend []byte
-
-		switch s.cfg.Type {
-		case "expr":
-			env := c.ds.Map()
-			env["IsTimeout"] = func() bool { return false }
-			output, err := expr.Eval(s.cfg.Spec, env)
-			if err != nil {
-				log.Println("can't run expr: ", err)
-				continue
-			}
-
-			toSend, err = json.Marshal(output)
-			if err != nil {
-				log.Println("can't encode json: ", err)
-				continue
-			}
-		case "template":
-			fMap := template.FuncMap{"IsTimeout": func() bool { return true }}
-			t := template.Must(template.New("msg").Funcs(fMap).Parse(s.cfg.Spec))
-			b := &bytes.Buffer{}
-			err := t.Execute(b, c.ds.Map())
-			if err != nil {
-				log.Print("can't execute template: ", err)
-				continue
-			}
-			toSend = b.Bytes()
-		default:
-			log.Printf("unknown sink (%s) data type: %s", s.cfg.Name, s.cfg.Type)
-			continue
-		}
-
-		log.Print("Sending to: ", s.cfg.Name)
-		err := s.iface.Send(toSend)
-		if err != nil {
-			log.Print("Sink error: ", err)
-		}
-	}
+	c.dispatch(false)
 }
 
 func (c *eventDispatcher) alert(key string, t time.Time, v any) {
-	for _, s := range c.sinks {
-
-		var toSend []byte
-
-		switch s.cfg.Type {
-		case "expr":
-			env := c.ds.Map()
-			env["IsTimeout"] = func() bool { return true }
-
-			output, err := expr.Eval(s.cfg.Spec, env)
-			if err != nil {
-				log.Println("can't run expr: ", err)
-				continue
-			}
-
-			toSend, err = json.Marshal(output)
-			if err != nil {
-				log.Println("can't encode json: ", err)
-				continue
-			}
-		case "template":
-			fMap := template.FuncMap{"IsTimeout": func() bool { return true }}
-			t := template.Must(template.New("msg").Funcs(fMap).Parse(s.cfg.Spec))
-			b := &bytes.Buffer{}
-			err := t.Execute(b, c.ds.Map())
-			if err != nil {
-				log.Print("can't execute template: ", err)
-				continue
-			}
-			toSend = b.Bytes()
-		default:
-			log.Printf("unknown sink (%s) data type: %s", s.cfg.Name, s.cfg.Type)
-			continue
-		}
-
-		log.Print("Sending to: ", s.cfg.Name)
-		err := s.iface.Send(toSend)
-		if err != nil {
-			log.Print("Sink error: ", err)
-		}
-	}
+	c.dispatch(true)
 }
 
 func (c *eventDispatcher) Start() {
