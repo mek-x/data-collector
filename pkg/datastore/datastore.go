@@ -58,7 +58,7 @@ func (d *dataStore) Publish(key string, v interface{}) {
 		e = newElem()
 	} else {
 		if e.timer != nil && e.timeout > 0 {
-			e.timer.Stop()
+			e.timer.Reset(e.timeout)
 		}
 	}
 
@@ -67,12 +67,6 @@ func (d *dataStore) Publish(key string, v interface{}) {
 	e.stamp = time.Now()
 
 	d.store[key] = e
-
-	if e.timeout > 0 {
-		e.timer = time.AfterFunc(e.timeout, func() {
-			e.tf(key, e.stamp, e.v)
-		})
-	}
 
 	d.lock.Unlock()
 
