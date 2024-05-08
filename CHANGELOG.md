@@ -1,6 +1,6 @@
 # Changelog
 
-## 0.2.5 ()
+## 0.2.5 (2024-05-08)
 
 - (sinks/event) add timeout trigger and IsTimeout function in sinks templates
 
