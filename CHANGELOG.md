@@ -1,12 +1,16 @@
 # Changelog
 
+## 0.2.7 (2024-05-23)
+
+- (dispatchers/event) trigger the event only once, when expression is met
+
 ## 0.2.6 (2024-05-08)
 
 - (datastore) fix timeout timer reset issue
 
 ## 0.2.5 (2024-05-08)
 
-- (sinks/event) add timeout trigger and IsTimeout function in sinks templates
+- (dispatchers/event) add timeout trigger and IsTimeout function in sinks templates
 
 ## 0.2.4 (2024-05-02)
 
