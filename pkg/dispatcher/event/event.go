@@ -31,6 +31,7 @@ type eventDispatcher struct {
 	eventParams EventParams
 	sinks       []sinkInstance
 	ds          datastore.DataStore
+	triggered   bool
 }
 
 type triggerExpr struct {
@@ -146,10 +147,14 @@ func (c *eventDispatcher) sendToAll(key string, t time.Time, v, old any) {
 	}
 
 	if !commence {
+		c.triggered = false
 		return
 	}
 
-	c.dispatch(false)
+	if !c.triggered {
+		c.triggered = true
+		c.dispatch(false)
+	}
 }
 
 func (c *eventDispatcher) alert(key string, t time.Time, v any) {
