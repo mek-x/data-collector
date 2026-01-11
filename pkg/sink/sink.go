@@ -10,7 +10,7 @@ type SinkCfg struct {
 	Spec string
 }
 
-type Init func(params any) Sink
+type Init func(params any) (Sink, error)
 type registry map[string]Init
 
 var Registry = make(registry)

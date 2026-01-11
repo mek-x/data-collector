@@ -14,8 +14,8 @@ func init() {
 	sink.Registry.Add("stdout", New)
 }
 
-func New(params any) sink.Sink {
-	return &stdout{}
+func New(params any) (sink.Sink, error) {
+	return &stdout{}, nil
 }
 
 func (*stdout) Send(b []byte) error {

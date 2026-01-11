@@ -111,9 +111,9 @@ func main() {
 			log.Print(i, ": unknown sink type - ", sinkType)
 			continue
 		}
-		s := sinkInit(params)
-		if s == nil {
-			log.Print(i, ": can't initialize sink, config error?")
+		s, err := sinkInit(params)
+		if err != nil {
+			log.Print(i, ": can't initialize sink: ", err)
 			continue
 		}
 		sinks[i] = s

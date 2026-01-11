@@ -32,16 +32,16 @@ func init() {
 	sink.Registry.Add("gotify", New)
 }
 
-func New(p any) sink.Sink {
+func New(p any) (sink.Sink, error) {
 
 	var opt GotifyParams
 
 	if err := mapstructure.Decode(p, &opt); err != nil {
-		return nil
+		return nil, err
 	}
 
 	if opt.Url == "" || opt.Token == "" {
-		return nil
+		return nil, fmt.Errorf("gotify sink: url and token are required fields")
 	}
 
 	if opt.Title == "" {
@@ -53,7 +53,7 @@ func New(p any) sink.Sink {
 		token:    opt.Token,
 		title:    opt.Title,
 		priority: opt.Priority,
-	}
+	}, nil
 }
 
 func (g *gotify) Send(b []byte) error {

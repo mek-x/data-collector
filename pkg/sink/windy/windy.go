@@ -40,22 +40,22 @@ func init() {
 	sink.Registry.Add("windy", New)
 }
 
-func New(p any) sink.Sink {
+func New(p any) (sink.Sink, error) {
 
 	var opt WindyParams
 
 	if err := mapstructure.Decode(p, &opt); err != nil {
-		return nil
+		return nil, err
 	}
 
 	if opt.Apikey == "" {
-		return nil
+		return nil, fmt.Errorf("windy sink: apikey is a required field")
 	}
 
 	return &windy{
 		apikey: opt.Apikey,
 		id:     opt.Id,
-	}
+	}, nil
 }
 
 func (w *windy) Send(b []byte) error {
