@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"fmt"
 	"net/http"
+	"net/url"
 	"strconv"
 	"text/template"
 	"time"
@@ -11,6 +12,8 @@ import (
 	"github.com/mitchellh/mapstructure"
 	"gitlab.com/mek_x/data-collector/pkg/sink"
 )
+
+const defaultTimeout = 5 * time.Second
 
 type NtfyParams struct {
 	Url      string
@@ -34,19 +37,19 @@ func init() {
 	sink.Registry.Add("ntfy", New)
 }
 
-func New(p any) sink.Sink {
+func New(p any) (sink.Sink, error) {
 
 	var opt NtfyParams
 
 	if err := mapstructure.Decode(p, &opt); err != nil {
-		return nil
+		return nil, err
 	}
 
 	if opt.Url == "" || opt.Topic == "" {
-		return nil
+		return nil, fmt.Errorf("ntfy sink: url and topic are required fields")
 	}
 
-	if opt.Priority == 0 {
+	if opt.Priority < 1 || opt.Priority > 5 {
 		opt.Priority = 3
 	}
 
@@ -56,7 +59,7 @@ func New(p any) sink.Sink {
 		token:    opt.Token,
 		title:    opt.Title,
 		priority: opt.Priority,
-	}
+	}, nil
 }
 
 func reformat(in string) (string, error) {
@@ -83,8 +86,12 @@ func reformat(in string) (string, error) {
 
 func (n *ntfy) Send(b []byte) error {
 
-	r, err := http.NewRequest("POST", fmt.Sprintf("%s/%s", n.url, n.topic), bytes.NewBuffer(b))
+	url, err := url.JoinPath(n.url, n.topic)
+	if err != nil {
+		return err
+	}
 
+	r, err := http.NewRequest("POST", url, bytes.NewBuffer(b))
 	if err != nil {
 		return err
 	}
@@ -106,7 +113,7 @@ func (n *ntfy) Send(b []byte) error {
 		r.Header.Add("Priority", strconv.Itoa(n.priority))
 	}
 
-	client := &http.Client{}
+	client := &http.Client{Timeout: defaultTimeout}
 	resp, err := client.Do(r)
 	if err != nil {
 		return err
