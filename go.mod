@@ -1,6 +1,8 @@
 module gitlab.com/mek_x/data-collector
 
-go 1.21.1
+go 1.25
+
+toolchain go1.22.12
 
 require (
 	github.com/PaesslerAG/jsonpath v0.1.1
