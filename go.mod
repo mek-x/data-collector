@@ -2,8 +2,6 @@ module gitlab.com/mek_x/data-collector
 
 go 1.25
 
-toolchain go1.22.12
-
 require (
 	github.com/PaesslerAG/jsonpath v0.1.1
 	github.com/antonmedv/expr v1.15.4
@@ -22,8 +20,8 @@ require (
 	github.com/mattn/go-isatty v0.0.12 // indirect
 	github.com/robfig/cron/v3 v3.0.1 // indirect
 	go.uber.org/atomic v1.9.0 // indirect
-	golang.org/x/net v0.8.0 // indirect
+	golang.org/x/net v0.48.0 // indirect
 	golang.org/x/sync v0.1.0 // indirect
-	golang.org/x/sys v0.6.0 // indirect
+	golang.org/x/sys v0.40.0 // indirect
 	golang.org/x/xerrors v0.0.0-20200804184101-5ec99f83aff1 // indirect
 )
