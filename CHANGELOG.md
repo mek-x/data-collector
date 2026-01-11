@@ -1,5 +1,18 @@
 # Changelog
 
+## 0.3.0 (2026-01-11)
+
+- (sinks) add the ntfy sink
+    - support templated `Title` with `now` helper
+    - require `url` and `topic` parameters; default priority to 3 when out of range or not set
+    - send `Authorization: Bearer <token>` when `token` is set
+    - POST payload to `{url}/{topic}`, accept any `2xx` response and close response body
+    - use 5s HTTP client timeout
+    - register **sink** via `sink.Registry` and return errors from constructor
+    - added example configuration for the sink
+- (sinks) added to all sinks support for new costructor with error returned, instead of just `nil`
+- main: handle error return from new sink constructor
+
 ## 0.2.7 (2024-05-23)
 
 - (dispatchers/event) trigger the event only once, when expression is met
