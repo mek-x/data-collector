@@ -34,7 +34,7 @@ compile:
 deploy:
   stage: deploy
   before_script:
-    - go install github.com/google/ko@0.18.1
+    - go install github.com/google/ko@v0.18.1
     - ko login -u "$CI_REGISTRY_USER" -p "$CI_REGISTRY_PASSWORD" $CI_REGISTRY
   script:
     - |
